@@ -19,8 +19,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { categoryLabels, statusLabels, locationOptions } from '@/lib/mock-data';
-import type { AssetFilters as AssetFiltersType, AssetCategory, AssetStatus } from '@/types/asset';
+import { categoryLabels, statusLabels, locationOptions } from '@/constants/asset';
+import type { AssetFilters as AssetFiltersType, AssetCategory, AssetStatus, LocationOption } from '@/types/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AssetFiltersProps {
@@ -32,25 +32,25 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
   const isMobile = useIsMobile();
 
   const activeFiltersCount = [
-    filters.category,
+    filters.name,
     filters.status,
     filters.location,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    onFiltersChange({ search: filters.search });
+    onFiltersChange({ name: filters.name });
   };
 
   const FilterContent = () => (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">ประเภท</label>
+        <label className="text-sm font-medium">สถานที่ตั้ง</label>
         <Select
-          value={filters.category || 'all'}
+          value={filters.location || 'all'}
           onValueChange={(value) =>
             onFiltersChange({
               ...filters,
-              category: value === 'all' ? undefined : (value as AssetCategory),
+              location: value === 'all' ? undefined : (value as LocationOption),
             })
           }
         >
@@ -59,7 +59,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">ทั้งหมด</SelectItem>
-            {Object.entries(categoryLabels).map(([key, label]) => (
+            {Object.entries(locationOptions).map(([key, label]) => (
               <SelectItem key={key} value={key}>
                 {label}
               </SelectItem>
@@ -100,7 +100,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           onValueChange={(value) =>
             onFiltersChange({
               ...filters,
-              location: value === 'all' ? undefined : value,
+              location: value === 'all' ? undefined : (value as LocationOption),
             })
           }
         >
@@ -137,19 +137,19 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="ค้นหาด้วยรหัส, ชื่อ, หรือคำอธิบาย..."
-          value={filters.search || ''}
+          placeholder="ค้นหาด้วยชื่อ"
+          value={filters.name || ''}
           onChange={(e) =>
-            onFiltersChange({ ...filters, search: e.target.value })
+            onFiltersChange({ ...filters, name: e.target.value })
           }
           className="pl-9"
         />
-        {filters.search && (
+        {filters.name && (
           <Button
             variant="ghost"
             size="icon"
             className="absolute right-1 top-1/2 size-7 -translate-y-1/2"
-            onClick={() => onFiltersChange({ ...filters, search: '' })}
+            onClick={() => onFiltersChange({ ...filters, name: '' })}
           >
             <X className="size-4" />
           </Button>
@@ -184,20 +184,20 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
         /* Desktop: Inline Selects */
         <div className="flex items-center gap-2">
           <Select
-            value={filters.category || 'all'}
+            value={filters.location || 'all'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                category: value === 'all' ? undefined : (value as AssetCategory),
+                location: value === 'all' ? undefined : (value as LocationOption),
               })
             }
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="ประเภท" />
+              <SelectValue placeholder="สถานที่ตั้ง" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">ทุกประเภท</SelectItem>
-              {Object.entries(categoryLabels).map(([key, label]) => (
+              <SelectItem value="all">ทุกสถานที่</SelectItem>
+              {Object.entries(locationOptions).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
                 </SelectItem>

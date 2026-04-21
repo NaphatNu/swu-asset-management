@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { AssetStatus, RepairPriority, RepairStatus } from '@/types/asset';
-import { statusLabels, priorityLabels } from '@/lib/mock-data';
+import { statusLabels, priorityLabels, repairStatusLabels } from '@/constants/asset';
 
 interface StatusBadgeProps {
   status: AssetStatus;
@@ -57,18 +57,9 @@ interface RepairStatusBadgeProps {
   className?: string;
 }
 
-const repairStatusLabels: Record<RepairStatus, string> = {
-  pending: 'รอดำเนินการ',
-  'in-progress': 'กำลังดำเนินการ',
-  completed: 'เสร็จสิ้น',
-  cancelled: 'ยกเลิก',
-};
-
 const repairStatusStyles: Record<RepairStatus, string> = {
-  pending: 'bg-warning/10 text-warning border-warning/20',
-  'in-progress': 'bg-primary/10 text-primary border-primary/20',
-  completed: 'bg-success/10 text-success border-success/20',
-  cancelled: 'bg-muted text-muted-foreground border-muted',
+  'internal-repair': 'bg-warning/10 text-warning border-warning/20 hover:bg-warning/20',
+  'external-repair': 'bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20',
 };
 
 export function RepairStatusBadge({ status, className }: RepairStatusBadgeProps) {

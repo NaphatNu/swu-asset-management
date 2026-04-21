@@ -3,7 +3,7 @@
 import { MapPin, Calendar, Tag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from './status-badge';
-import { categoryLabels } from '@/lib/mock-data';
+import { categoryLabels } from '@/constants/asset';
 import type { Asset } from '@/types/asset';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export function AssetCard({ asset, onClick, className }: AssetCardProps) {
           <div className="flex-1 space-y-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-muted-foreground">
-                {asset.assetId}
+                {asset.serialNumber}
               </span>
               <StatusBadge status={asset.status} />
             </div>
@@ -35,19 +35,19 @@ export function AssetCard({ asset, onClick, className }: AssetCardProps) {
               {asset.name}
             </h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 <Tag className="size-3" />
                 <span>{categoryLabels[asset.category]}</span>
-              </div>
+              </div> */}
               <div className="flex items-center gap-1">
                 <MapPin className="size-3" />
                 <span className="truncate max-w-[150px]">{asset.location}</span>
               </div>
-              {asset.purchaseDate && (
+              {asset.acquiredDate && (
                 <div className="flex items-center gap-1">
                   <Calendar className="size-3" />
                   <span>
-                    {new Date(asset.purchaseDate).toLocaleDateString('th-TH', {
+                    {new Date(asset.acquiredDate).toLocaleDateString('th-TH', {
                       year: 'numeric',
                       month: 'short',
                     })}

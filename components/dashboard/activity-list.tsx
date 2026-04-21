@@ -5,7 +5,7 @@ import { th } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { mockActivityLogs } from '@/lib/mock-data';
+import { mockActivityLogs } from '@/mocks/activityLogs';
 import {
   Plus,
   Edit,

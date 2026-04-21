@@ -23,6 +23,6 @@ export function parseAssetIdFromQrValue(value: string): string | null {
     // not a valid absolute URL
   }
 
-  const embedded = trimmed.match(/\b(\d{4}-\d{3}-\d{4})\b/);
+  const embedded = trimmed.match(/\b(\d{3}-\d{16}-\d{1}-\d{2})\b/);
   return embedded ? embedded[1] : null;
 }

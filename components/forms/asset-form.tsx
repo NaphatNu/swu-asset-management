@@ -2,13 +2,20 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon, ScanLine } from 'lucide-react';
+import { 
+  Command, 
+  CommandEmpty, 
+  CommandGroup, 
+  CommandInput, 
+  CommandItem, 
+  CommandList 
+} from '@/components/ui/command';
+import { CalendarIcon, Check, ChevronsUpDown, ScanLine } from 'lucide-react';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -25,7 +32,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { assetFormSchema, type AssetFormValues } from '@/lib/validations';
-import { categoryLabels, statusLabels, locationOptions } from '@/lib/mock-data';
+import { categoryLabels, statusLabels, locationOptions } from '@/constants/asset';
+import { cn } from '@/lib/utils';
 
 interface AssetFormProps {
   defaultValues?: Partial<AssetFormValues>;
@@ -53,15 +61,18 @@ export function AssetForm({
   } = useForm<AssetFormValues>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: {
-      assetId: '',
+      mainSerialNumber: '',
+      serialNumber: '',
       name: '',
-      category: undefined,
+      owner: '',
+      acquiredDate: '',
+      // category: undefined,
       location: '',
       status: 'available',
-      description: '',
-      purchaseDate: '',
-      purchasePrice: undefined,
-      warrantyExpiry: '',
+      // description: '',
+      // purchaseDate: '',
+      // purchasePrice: undefined,
+      // warrantyExpiry: '',
       ...defaultValues,
     },
   });
@@ -77,10 +88,10 @@ export function AssetForm({
 
           {/* Asset ID */}
           <div>
-            <label>รหัสครุภัณฑ์ *</label>
+            <label>รหัสครุภัณฑ์เดิม / Serial Number *</label>
             <div className="flex gap-2">
               <Input
-                {...register('assetId')}
+                {...register('serialNumber')}
                 className="font-mono"
                 disabled={lockAssetId}
               />
@@ -92,31 +103,75 @@ export function AssetForm({
             </div>
           </div>
 
+          {/* Serial number */}
+          <div>
+            <label>หมายเลขครุภัณฑ์ หลัก-ย่อย *</label>
+            <Input
+              {...register('mainSerialNumber')}
+              className="font-mono"
+              disabled={lockAssetId}
+            />
+          </div>
+
           {/* Name */}
           <div>
-            <label>ชื่อครุภัณฑ์ *</label>
+            <label>รายการครุภัณฑ์ *</label>
             <Input {...register('name')} />
           </div>
 
-          {/* Category */}
+          {/* Location */}
           <div>
-            <label>ประเภท *</label>
+            <label className="text-sm font-medium">สถานที่ *</label>
             <Controller
               control={control}
-              name="category"
+              name="location"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภท" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value
+                        ? locationOptions.find((loc) => loc === field.value)
+                        : "เลือกหรือค้นหาสถานที่..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                      <CommandInput placeholder="พิมพ์เพื่อค้นหาเลขห้อง..." />
+                      <CommandList> {/* ตรวจสอบว่ามีตัวนี้ครอบ Group */}
+                        <CommandEmpty>ไม่พบสถานที่นี้</CommandEmpty>
+                        <CommandGroup>
+                          {locationOptions.map((loc) => (
+                            <CommandItem
+                              key={loc}
+                              // สำคัญ: value ของ CommandItem ใช้สำหรับ Search 
+                              // ถ้าใส่ภาษาไทยลงไปตรงๆ บางครั้ง cmdk จะมีปัญหากับการ Subscribe สเตต
+                              value={loc}
+                              onSelect={() => {
+                                field.onChange(loc); // อัปเดตค่าเข้า react-hook-form
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  loc === field.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {loc}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               )}
             />
           </div>
@@ -144,34 +199,36 @@ export function AssetForm({
             />
           </div>
 
-          {/* Location */}
+          {/* Category
           <div>
-            <label>สถานที่ *</label>
+            <label>ประเภท *</label>
             <Controller
               control={control}
-              name="location"
+              name="category"
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder="เลือกสถานที่" />
+                    <SelectValue placeholder="เลือกประเภท" />
                   </SelectTrigger>
                   <SelectContent>
-                    {locationOptions.map((loc) => (
-                      <SelectItem key={loc} value={loc}>
-                        {loc}
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
             />
-          </div>
+          </div> */}
+
+          
 
           {/* Description */}
-          <div>
+          {/* <div>
             <label>รายละเอียด</label>
             <Textarea {...register('description')} />
-          </div>
+          </div> */}
 
         </CardContent>
       </Card>
@@ -188,7 +245,7 @@ export function AssetForm({
             <label>วันที่จัดซื้อ</label>
             <Controller
               control={control}
-              name="purchaseDate"
+              name="acquiredDate"
               render={({ field }) => (
                 <Popover>
                   <PopoverTrigger asChild>
@@ -205,9 +262,12 @@ export function AssetForm({
                       selected={
                         field.value ? new Date(field.value) : undefined
                       }
-                      onSelect={(date) =>
-                        field.onChange(date?.toISOString().split('T')[0])
-                      }
+                      onSelect={(date) => {
+                        // ใช้ format แทน toISOString เพื่อให้ได้วันที่ตามเครื่องผู้ใช้ (Local Time)
+                        const formattedDate = date ? format(date, 'yyyy-MM-dd') : "";
+                        field.onChange(formattedDate);
+                      }}
+                      captionLayout="dropdown"
                     />
                   </PopoverContent>
                 </Popover>
@@ -216,13 +276,13 @@ export function AssetForm({
           </div>
 
           {/* Price */}
-          <div>
+          {/* <div>
             <label>ราคา</label>
             <Input
               type="number"
               {...register('purchasePrice')}
             />
-          </div>
+          </div> */}
 
         </CardContent>
       </Card>

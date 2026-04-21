@@ -17,25 +17,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getAssetByAssetId, updateAsset } from '@/lib/api';
-import { categoryLabels, statusLabels } from '@/lib/mock-data';
+import { getAssetBySerialNumber, updateAsset } from '@/lib/api';
+import { categoryLabels, statusLabels } from '@/constants/asset';
 import type { Asset } from '@/types/asset';
 import type { AssetFormValues } from '@/lib/validations';
 
 function assetToFormValues(asset: Asset): AssetFormValues {
   return {
-    assetId: asset.assetId,
+    mainSerialNumber: asset.mainSerialNumber,
+    serialNumber: asset.serialNumber,
     name: asset.name,
-    category: asset.category,
+    owner: asset.owner,
+    acquiredDate: asset.acquiredDate,
     location: asset.location,
     status: asset.status,
-    description: asset.description ?? '',
-    purchaseDate: asset.purchaseDate ?? '',
-    purchasePrice:
-      asset.purchasePrice === undefined || asset.purchasePrice === null
-        ? ''
-        : asset.purchasePrice,
-    warrantyExpiry: asset.warrantyExpiry ?? '',
   };
 }
 
@@ -55,8 +50,8 @@ function DetailSkeleton() {
 
 export default function AssetDetailPage() {
   const params = useParams();
-  const raw = params.assetId;
-  const assetId =
+  const raw = params.serialNumber;
+  const serialNumber =
     typeof raw === 'string'
       ? decodeURIComponent(raw)
       : Array.isArray(raw)
@@ -70,7 +65,7 @@ export default function AssetDetailPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
-    if (!assetId) {
+    if (!serialNumber) {
       setLoading(false);
       setNotFound(true);
       setAsset(null);
@@ -79,7 +74,7 @@ export default function AssetDetailPage() {
     setLoading(true);
     setNotFound(false);
     try {
-      const data = await getAssetByAssetId(assetId);
+      const data = await getAssetBySerialNumber(serialNumber);
       console.log('data', data);
       if (!data) {
         setAsset(null);
@@ -95,17 +90,17 @@ export default function AssetDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [assetId]);
+  }, [serialNumber]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const handleUpdate = async (data: AssetFormValues) => {
-    if (!assetId) return;
+    if (!serialNumber) return;
     setSubmitting(true);
     try {
-      const updated = await updateAsset(assetId, data);
+      const updated = await updateAsset(serialNumber, data);
       setAsset(updated);
       setEditOpen(false);
       toast.success('บันทึกข้อมูลแล้ว');
@@ -124,7 +119,7 @@ export default function AssetDetailPage() {
           loading
             ? 'กำลังโหลด…'
             : asset
-              ? `รหัส ${asset.assetId}`
+              ? `รหัส ${asset.serialNumber}`
               : notFound
                 ? 'ไม่พบข้อมูล'
                 : undefined
@@ -146,7 +141,7 @@ export default function AssetDetailPage() {
             <p className="text-lg text-muted-foreground">
               ไม่พบครุภัณฑ์รหัส{' '}
               <span className="font-mono font-medium text-foreground">
-                {assetId || '—'}
+                {serialNumber || '—'}
               </span>
             </p>
             <p className="text-sm text-muted-foreground">
@@ -167,7 +162,7 @@ export default function AssetDetailPage() {
               แก้ไข
             </Button>
             <Button variant="outline" asChild>
-              <Link href={`/qr-generator?assetId=${encodeURIComponent(asset.assetId)}`}>
+              <Link href={`/qr-generator?assetId=${encodeURIComponent(asset.serialNumber)}`}>
                 สร้าง QR
               </Link>
             </Button>
@@ -183,10 +178,10 @@ export default function AssetDetailPage() {
                   <p className="text-muted-foreground">ชื่อ</p>
                   <p className="font-medium">{asset.name}</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-muted-foreground">ประเภท</p>
-                  <p>{categoryLabels[asset.category]}</p>
-                </div>
+                  <p>{categoryLabels[asset.Category]}</p>
+                </div> */}
                 <div>
                   <p className="text-muted-foreground">สถานะ</p>
                   <p>{statusLabels[asset.status]}</p>
@@ -200,29 +195,29 @@ export default function AssetDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">การจัดซื้อ / ประกัน</CardTitle>
+                <CardTitle className="text-base">การจัดซื้อ</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">วันที่จัดซื้อ</p>
-                  <p>{asset.purchaseDate ?? '—'}</p>
+                  <p>{asset.acquiredDate ?? '—'}</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-muted-foreground">ราคา</p>
                   <p>
                     {asset.purchasePrice != null
                       ? `${asset.purchasePrice.toLocaleString('th-TH')} บาท`
                       : '—'}
                   </p>
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <p className="text-muted-foreground">หมดประกัน</p>
                   <p>{asset.warrantyExpiry ?? '—'}</p>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 
-            <Card className="sm:col-span-2">
+            {/* <Card className="sm:col-span-2">
               <CardHeader>
                 <CardTitle className="text-base">รายละเอียด</CardTitle>
               </CardHeader>
@@ -231,7 +226,7 @@ export default function AssetDetailPage() {
                   {asset.description?.trim() ? asset.description : '—'}
                 </p>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           <Dialog open={editOpen} onOpenChange={setEditOpen}>

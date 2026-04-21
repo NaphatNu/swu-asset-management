@@ -1,4 +1,6 @@
-import { mockAssets, mockRepairRequests, mockDashboardStats } from '@/lib/mock-data';
+import { mockAssets } from '@/mocks/assets';
+import { mockRepairRequests } from '@/mocks/repairRequests';
+import { mockDashboardStats } from '@/mocks/dashboard';
 import type {
   Asset,
   AssetFilters,
@@ -11,34 +13,29 @@ const assetsStore: Asset[] = [...mockAssets];
 const repairsStore: RepairRequest[] = [...mockRepairRequests];
 const dashboardStatsStore: DashboardStats = { ...mockDashboardStats };
 
-export function getMockAssetByAssetId(assetId: string): Asset | undefined {
-  return assetsStore.find((a) => a.assetId === assetId);
+export function getMockAssetBySerialNumber(SerialNumber: string): Asset | undefined {
+  return assetsStore.find((a) => a.serialNumber === SerialNumber);
 }
 
-export function updateMockAssetByAssetId(
-  assetId: string,
+export function updateMockAssetBySerialNumber(
+  SerialNumber: string,
   data: Pick<
     Asset,
+    | 'mainSerialNumber'
+    | 'serialNumber'
     | 'name'
-    | 'category'
-    | 'location'
     | 'status'
-    | 'description'
-    | 'purchaseDate'
-    | 'purchasePrice'
-    | 'warrantyExpiry'
+    | 'owner'
+    | 'location'
+    | 'acquiredDate'
   >
 ): Asset | null {
-  const idx = assetsStore.findIndex((a) => a.assetId === assetId);
+  const idx = assetsStore.findIndex((a) => a.serialNumber === SerialNumber);
   if (idx === -1) return null;
   const prev = assetsStore[idx];
   const updated: Asset = {
     ...prev,
     ...data,
-    description: data.description || undefined,
-    purchaseDate: data.purchaseDate || undefined,
-    purchasePrice: data.purchasePrice,
-    warrantyExpiry: data.warrantyExpiry || undefined,
     updatedAt: new Date().toISOString(),
   };
   assetsStore[idx] = updated;
@@ -49,16 +46,14 @@ export function listMockAssets(filters?: AssetFilters): Asset[] {
   if (!filters) return [...assetsStore];
 
   return assetsStore.filter((asset) => {
-    if (filters.search) {
-      const query = filters.search.toLowerCase();
+    if (filters.name) {
+      const query = filters.name.toLowerCase();
       const matched =
-        asset.assetId.toLowerCase().includes(query) ||
-        asset.name.toLowerCase().includes(query) ||
-        asset.description?.toLowerCase().includes(query);
+        asset.serialNumber.toLowerCase().includes(query) ||
+        asset.name.toLowerCase().includes(query);
       if (!matched) return false;
     }
 
-    if (filters.category && asset.category !== filters.category) return false;
     if (filters.status && asset.status !== filters.status) return false;
     if (filters.location && asset.location !== filters.location) return false;
     return true;
@@ -68,15 +63,13 @@ export function listMockAssets(filters?: AssetFilters): Asset[] {
 export function createMockAsset(
   data: Pick<
     Asset,
-    | 'assetId'
+    | 'mainSerialNumber'
+    | 'serialNumber'
     | 'name'
-    | 'category'
-    | 'location'
     | 'status'
-    | 'description'
-    | 'purchaseDate'
-    | 'purchasePrice'
-    | 'warrantyExpiry'
+    | 'owner'
+    | 'location'
+    | 'acquiredDate'
   >
 ): Asset {
   const now = new Date().toISOString();
@@ -88,10 +81,10 @@ export function createMockAsset(
   };
 
   assetsStore.unshift(newAsset);
-  dashboardStatsStore.totalAssets += 1;
-  if (newAsset.status === 'available') dashboardStatsStore.availableAssets += 1;
-  if (newAsset.status === 'repair') dashboardStatsStore.inRepairAssets += 1;
-  if (newAsset.status === 'damaged') dashboardStatsStore.damagedAssets += 1;
+  dashboardStatsStore.total += 1;
+  if (newAsset.status === 'available') dashboardStatsStore.available += 1;
+  if (newAsset.status === 'internal-repair') dashboardStatsStore.internalRepair += 1;
+  if (newAsset.status === 'pending-disposal') dashboardStatsStore.externalRepair += 1;
 
   return newAsset;
 }
@@ -101,20 +94,21 @@ export function listMockRepairs(): RepairRequest[] {
 }
 
 export function createMockRepair(data: {
-  assetId: string;
+  serialNumber: string;
+  name?: string;
   description: string;
-  priority: RepairPriority;
 }): RepairRequest {
-  const assetName = assetsStore.find((asset) => asset.assetId === data.assetId)?.name || data.assetId;
+  const assetName =
+    assetsStore.find((asset) => asset.serialNumber === data.serialNumber)?.name ||
+    data.name || 'ไม่ระบุชื่อครุภัณฑ์';
   const newRequest: RepairRequest = {
     id: `${repairsStore.length + 1}`,
-    assetId: data.assetId,
-    assetName,
+    serialNumber: data.serialNumber,
+    name: assetName,
     description: data.description,
-    priority: data.priority,
-    status: 'pending',
-    requestedBy: 'ผู้ใช้งานระบบ',
-    requestedAt: new Date().toISOString(),
+    repairStatus: 'internal-repair',
+    reportedBy: 'mock-user',
+    requestDate: new Date().toISOString(),
   };
 
   repairsStore.unshift(newRequest);

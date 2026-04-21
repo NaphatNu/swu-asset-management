@@ -17,18 +17,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { mockAssets } from '@/lib/mock-data';
+import { mockAssets } from '@/mocks/assets';
 
 function QRGeneratorContent() {
   const searchParams = useSearchParams();
   const initialAssetId = searchParams.get('assetId') || '';
 
-  const [assetId, setAssetId] = useState(initialAssetId);
+  const [SerialNumber, setSerialNumber] = useState(initialAssetId);
   const [qrSize, setQrSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [generated, setGenerated] = useState(!!initialAssetId);
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const asset = mockAssets.find((a) => a.assetId === assetId);
+  const asset = mockAssets.find((a) => a.serialNumber === SerialNumber);
 
   const sizeMap = {
     small: 150,
@@ -37,15 +37,15 @@ function QRGeneratorContent() {
   };
 
   const handleGenerate = () => {
-    if (!assetId) {
+    if (!SerialNumber) {
       toast.error('กรุณากรอกรหัสครุภัณฑ์');
       return;
     }
 
-    const pattern = /^\d{3}-\d{11}-\d{1}-\d{2}$/;
-    if (!pattern.test(assetId)) {
+    const pattern = /^\d{3}-\d{16}-\d{1}-\d{2}$/;
+    if (!pattern.test(SerialNumber)) {
       toast.error('รูปแบบรหัสไม่ถูกต้อง', {
-        description: 'รูปแบบที่ถูกต้อง: XXX-XXXXXXXXX-X-XX',
+        description: 'รูปแบบที่ถูกต้อง: XXX-XXXXXXXXXXXXXXXX-X-XX',
       });
       return;
     }
@@ -87,11 +87,11 @@ function QRGeneratorContent() {
       ctx.fillStyle = 'black';
       ctx.font = '14px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(assetId, canvas.width / 2, size + 50);
+      ctx.fillText(SerialNumber, canvas.width / 2, size + 50);
 
       // Download
       const link = document.createElement('a');
-      link.download = `qr-${assetId}.png`;
+      link.download = `qr-${SerialNumber}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
 
@@ -127,9 +127,9 @@ function QRGeneratorContent() {
               <Input
                 id="assetId"
                 placeholder="เช่น 123-4567890123-4-56"
-                value={assetId}
+                value={SerialNumber}
                 onChange={(e) => {
-                  setAssetId(e.target.value);
+                  setSerialNumber(e.target.value);
                   setGenerated(false);
                 }}
                 className="font-mono"
@@ -180,21 +180,21 @@ function QRGeneratorContent() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center gap-4">
-              {generated && assetId ? (
+              {generated && SerialNumber ? (
                 <>
                   <div
                     ref={qrRef}
                     className="flex flex-col items-center gap-3 rounded-xl border bg-white p-6"
                   >
                     <QRCodeSVG
-                      value={`https://assets.swu.ac.th/${assetId}`}
+                      value={`https://assets.swu.ac.th/${SerialNumber}`}
                       size={sizeMap[qrSize]}
                       level="H"
                       includeMargin={false}
                       fgColor="#000000"
                       bgColor="#ffffff"
                     />
-                    <p className="font-mono text-sm text-gray-700">{assetId}</p>
+                    <p className="font-mono text-sm text-gray-700">{SerialNumber}</p>
                   </div>
 
                   <Button

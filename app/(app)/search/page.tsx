@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AssetCard, AssetDetailDrawer } from '@/components/assets';
 import { QrScannerPanel } from '@/components/qr/qr-scanner-panel';
-import { getAssets } from '@/lib/api';
+import { getAssets, getAssetsSearch } from '@/lib/api';
 import { parseAssetIdFromQrValue } from '@/lib/qr/parse-asset-id';
 import { toast } from 'sonner';
 import type { Asset } from '@/types/asset';
@@ -37,7 +37,7 @@ export default function SearchPage() {
     let cancelled = false;
     setIsSearching(true);
     const timer = window.setTimeout(() => {
-      getAssets({ search: trimmed })
+      getAssetsSearch({ name: trimmed })
         .then((data) => {
           if (!cancelled) setSearchResults(data);
         })
@@ -59,22 +59,22 @@ export default function SearchPage() {
   };
 
   const handleEditAsset = (asset: Asset) => {
-    router.push(`/assets/${encodeURIComponent(asset.assetId)}`);
+    router.push(`/assets/${encodeURIComponent(asset.serialNumber)}`);
   };
 
   const handleGenerateQR = (asset: Asset) => {
-    router.push(`/qr-generator?assetId=${asset.assetId}`);
+    router.push(`/qr-generator?assetId=${asset.serialNumber}`);
   };
 
   const handleRepair = (asset: Asset) => {
-    router.push(`/repair?assetId=${asset.assetId}`);
+    router.push(`/repair?assetId=${asset.serialNumber}`);
   };
 
   const handleManualLookup = () => {
     const parsed = parseAssetIdFromQrValue(manualId.trim());
     if (!parsed) {
       toast.error('รหัสไม่ถูกต้อง', {
-        description: 'ใช้รูปแบบ XXXX-XXX-XXXX หรือวาง URL จาก QR',
+        description: 'ใช้รูปแบบ XXX-XXXXXXXXXXXXXXXX-X-XX หรือวาง URL จาก QR',
       });
       return;
     }
@@ -89,7 +89,7 @@ export default function SearchPage() {
       />
 
       <Tabs defaultValue="scan" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        {/* <TabsList className="grid w-full grid-cols-2 max-w-md">
         <TabsTrigger value="scan" className="gap-2">
             <ScanLine className="size-4" />
             สแกน QR
@@ -99,7 +99,7 @@ export default function SearchPage() {
             ค้นหา
           </TabsTrigger>
 
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="search" className="mt-6 space-y-6">
           {/* Search Input */}
@@ -190,11 +190,11 @@ export default function SearchPage() {
                 </TabsContent>
                 <TabsContent value="manual" className="mt-6 space-y-4">
                   <p className="text-center text-sm text-muted-foreground">
-                    กรอกรหัสครุภัณฑ์ (XXXX-XXX-XXXX) หรือวางข้อความจาก QR
+                    กรอกรหัสครุภัณฑ์ (XXX-XXXXXXXXXXXXXXXX-X-XX) หรือวางข้อความจาก QR
                   </p>
                   <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
                     <Input
-                      placeholder="เช่น 7440-001-0001"
+                      placeholder="เช่น 123-4567890123456789-4-56"
                       value={manualId}
                       onChange={(e) => setManualId(e.target.value)}
                       className="h-12 font-mono text-base"

@@ -1,21 +1,13 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Upload } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -24,145 +16,152 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+
 import { repairFormSchema, type RepairFormValues } from '@/lib/validations';
-import { priorityLabels, mockAssets } from '@/lib/mock-data';
+import { repairStatusLabels, statusLabels } from '@/constants/asset';
+import { getAssetBySerialNumber } from '@/lib/api';
 
 interface RepairFormProps {
-  defaultAssetId?: string;
+  defaultSerialNumber?: string;
   onSubmit: (data: RepairFormValues) => void;
   isSubmitting?: boolean;
 }
 
 export function RepairForm({
-  defaultAssetId,
+  defaultSerialNumber,
   onSubmit,
   isSubmitting,
 }: RepairFormProps) {
-  const form = useForm<RepairFormValues>({
+  const [isLoadingAsset, setIsLoadingAsset] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<RepairFormValues>({
     resolver: zodResolver(repairFormSchema),
     defaultValues: {
-      assetId: defaultAssetId || '',
+      serialNumber: defaultSerialNumber || '',
+      name: '',
       description: '',
-      priority: 'medium',
+      repairStatus: 'internal-repair',
     },
   });
 
-  const watchAssetId = form.watch('assetId');
-  const asset = mockAssets.find((a) => a.assetId === watchAssetId);
+  const watchSerialNumber = watch('serialNumber');
+  const watchAssetName = watch('name');
+
+  useEffect(() => {
+    const fetchAsset = async () => {
+      if (watchSerialNumber && watchSerialNumber.length >= 5) {
+        setIsLoadingAsset(true);
+        try {
+          const assetData = await getAssetBySerialNumber(watchSerialNumber);
+          setValue('name', assetData?.name || '');
+        } catch (error) {
+          setValue('name', '');
+        } finally {
+          setIsLoadingAsset(false);
+        }
+      } else {
+        setValue('name', '');
+      }
+    };
+
+    const timeoutId = setTimeout(fetchAsset, 500);
+    return () => clearTimeout(timeoutId);
+  }, [watchSerialNumber, setValue]);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">ข้อมูลการแจ้งซ่อม</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="assetId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>รหัสครุภัณฑ์ *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="เช่น 7440-001-0001"
-                      {...field}
-                      className="font-mono"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    รูปแบบ: XXXX-XXX-XXXX
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">ข้อมูลการแจ้งซ่อม</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          
+          {/* Field: รหัสครุภัณฑ์ */}
+          <div className="space-y-2">
+            <Label htmlFor="serialNumber">รหัสครุภัณฑ์ *</Label>
+            <div className="relative">
+              <Input
+                id="serialNumber"
+                placeholder="เช่น 7440-001-0001"
+                className="font-mono"
+                {...register('serialNumber')} // ใช้ register ตรงๆ
+              />
+              {isLoadingAsset && (
+                <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
               )}
-            />
-
-            {asset && (
-              <div className="rounded-lg bg-muted p-3 space-y-1">
-                <p className="text-xs text-muted-foreground">พบครุภัณฑ์:</p>
-                <p className="text-sm font-medium">{asset.name}</p>
-                <p className="text-xs text-muted-foreground">{asset.location}</p>
-              </div>
-            )}
-
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ระดับความเร่งด่วน *</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="เลือกระดับความเร่งด่วน" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(priorityLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>รายละเอียดปัญหา *</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="อธิบายอาการเสีย ปัญหา หรือสิ่งที่ต้องการซ่อมบำรุง..."
-                      className="min-h-[150px] resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    อธิบายอย่างน้อย 10 ตัวอักษร
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* File upload placeholder */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">แนบไฟล์ (ถ้ามี)</label>
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 p-8 transition-colors hover:border-muted-foreground/50">
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <Upload className="size-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    รองรับ JPG, PNG, PDF (ไม่เกิน 10MB)
-                  </p>
-                </div>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-[0.8rem] text-muted-foreground">รูปแบบ: XXXX-XXX-XXXX</p>
+            {errors.serialNumber && (
+              <p className="text-sm font-medium text-destructive">{errors.serialNumber.message}</p>
+            )}
+          </div>
 
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline">
-            ยกเลิก
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'กำลังส่ง...' : 'ส่งแจ้งซ่อม'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          {/* ชื่อครุภัณฑ์ที่ดึงมา */}
+          {watchAssetName && (
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 space-y-1 animate-in fade-in zoom-in-95">
+              <p className="text-xs text-emerald-700 font-semibold">พบครุภัณฑ์ในระบบ:</p>
+              <p className="text-sm font-bold text-emerald-900">{watchAssetName}</p>
+            </div>
+          )}
+
+          {/* Field: สถานะ (ต้องใช้ Controller เพราะ Select ไม่ใช่ Native Input) */}
+          <div className="space-y-2">
+            <Label>สถานะการแจ้งซ่อม *</Label>
+            <Controller
+              control={control}
+              name="repairStatus"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกสถานะ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(repairStatusLabels || {}).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.repairStatus && (
+              <p className="text-sm font-medium text-destructive">{errors.repairStatus.message}</p>
+            )}
+          </div>
+
+          {/* Field: รายละเอียดปัญหา */}
+          <div className="space-y-2">
+            <Label htmlFor="description">รายละเอียดปัญหา *</Label>
+            <Textarea
+              id="description"
+              placeholder="อธิบายอาการเสีย..."
+              className="min-h-[120px] resize-none"
+              {...register('description')} // ใช้ register ตรงๆ
+            />
+            {errors.description && (
+              <p className="text-sm font-medium text-destructive">{errors.description.message}</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end gap-3">
+        <Button type="button" variant="outline" onClick={() => reset()}>
+          ยกเลิก
+        </Button>
+        <Button type="submit" disabled={isSubmitting || isLoadingAsset}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSubmitting ? 'กำลังส่ง...' : 'ส่งแจ้งซ่อม'}
+        </Button>
+      </div>
+    </form>
   );
 }

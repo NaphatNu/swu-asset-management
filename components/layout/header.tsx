@@ -50,7 +50,7 @@ export function Header() {
       {/* Right side actions */}
       <div className="flex items-center gap-2">
         {/* Notifications */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="size-5" />
@@ -80,7 +80,7 @@ export function Header() {
               <p className="text-xs text-muted-foreground">1 ชั่วโมงที่แล้ว</p>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
 
         {/* Theme toggle - hidden on mobile, shown in sidebar */}
         <div className="hidden md:block">

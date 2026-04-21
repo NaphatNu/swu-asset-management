@@ -35,7 +35,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from './status-badge';
-import { categoryLabels } from '@/lib/mock-data';
+import { categoryLabels } from '@/constants/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { Asset } from '@/types/asset';
 
@@ -92,7 +92,7 @@ function AssetDetailContent({
             <div className="flex items-center gap-2">
               <Fingerprint className="size-3.5 text-muted-foreground" />
               <span className="font-mono text-sm font-semibold">
-                S/N: {asset.serial_number}
+                S/N: {asset.serialNumber}
               </span>
 
 
@@ -103,7 +103,7 @@ function AssetDetailContent({
           <div className="flex items-center gap-2">
             <Hash className="size-3.5 text-muted-foreground" />
             <span className="font-mono text-xs text-muted-foreground">
-              {asset.assetId}
+              {asset.mainSerialNumber}
             </span>
           </div>
         </div>
@@ -111,11 +111,11 @@ function AssetDetailContent({
         <Separator />
 
         <div className="space-y-1">
-          <DetailItem
+          {/* <DetailItem
             icon={Tag}
             label="ประเภท"
             value={categoryLabels[asset.category]}
-          />
+          /> */}
           <DetailItem
             icon={MapPin}
             label="สถานที่"
@@ -124,13 +124,13 @@ function AssetDetailContent({
           <DetailItem
             icon={User}
             label="ผู้รับผิดชอบ"
-            value={asset.assignedTo || 'ไม่ได้ระบุ'}
+            value={asset.owner || 'ไม่ได้ระบุ'}
           />
-          <DetailItem
+          {/* <DetailItem
             icon={FileText}
             label="รายละเอียด"
-            value={asset.description}
-          />
+            value={asset.Description}
+          /> */}
         </div>
 
         <Separator />
@@ -140,14 +140,14 @@ function AssetDetailContent({
             icon={Calendar}
             label="วันที่จัดซื้อ"
             value={
-              asset.purchaseDate
-                ? format(new Date(asset.purchaseDate), 'd MMMM yyyy', {
+              asset.acquiredDate
+                ? format(new Date(asset.acquiredDate), 'd MMMM yyyy', {
                   locale: th,
                 })
                 : undefined
             }
           />
-          <DetailItem
+          {/* <DetailItem
             icon={DollarSign}
             label="ราคา"
             value={
@@ -155,7 +155,7 @@ function AssetDetailContent({
                 ? `${asset.purchasePrice.toLocaleString()} บาท`
                 : undefined
             }
-          />
+          /> */}
           {/* <DetailItem
             icon={Shield}
             label="หมดประกัน"
@@ -170,9 +170,9 @@ function AssetDetailContent({
         </div>
 
         {/* เพิ่มส่วนบันทึกเวลาการแก้ไขล่าสุด (Optional) */}
-        <p className="text-[10px] text-center text-muted-foreground pt-2">
+        {/* <p className="text-[10px] text-center text-muted-foreground pt-2">
           อัปเดตล่าสุดเมื่อ: {format(new Date(asset.updatedAt), 'd MMM yy HH:mm', { locale: th })}
-        </p>
+        </p> */}
       </div>
 
       <div className="flex flex-wrap gap-2 px-4 pt-4">

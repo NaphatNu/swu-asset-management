@@ -13,9 +13,10 @@ import {
   AssetTable,
   AssetDetailDrawer,
 } from '@/components/assets';
-import { getAssets } from '@/lib/api';
+import { getAssets, getAssetsSearch } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { Asset, AssetFilters as FiltersType } from '@/types/asset';
+import { da } from 'date-fns/locale';
 
 export default function AssetsPage() {
   const router = useRouter();
@@ -31,9 +32,10 @@ export default function AssetsPage() {
     let mounted = true;
     setIsLoading(true);
 
-    getAssets(filters)
+    getAssetsSearch(filters)
       .then((data) => {
         if (mounted) setAssets(data);
+        console.log(data);
       })
       .finally(() => {
         if (mounted) setIsLoading(false);
@@ -50,15 +52,15 @@ export default function AssetsPage() {
   };
 
   const handleEditAsset = (asset: Asset) => {
-    router.push(`/assets/${encodeURIComponent(asset.serial_number)}`);
+    router.push(`/assets/${encodeURIComponent(asset.serialNumber)}`);
   };
 
   const handleGenerateQR = (asset: Asset) => {
-    router.push(`/qr-generator?assetId=${asset.serial_number}`);
+    router.push(`/qr-generator?assetId=${asset.serialNumber}`);
   };
 
   const handleRepair = (asset: Asset) => {
-    router.push(`/repair?assetId=${asset.serial_number}`);
+    router.push(`/repair?serialNumber=${asset.serialNumber}`);
   };
 
   return (

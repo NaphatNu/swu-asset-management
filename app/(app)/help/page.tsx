@@ -207,10 +207,10 @@ export default function HelpPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-3">
-              <Button variant="outline">
+              {/* <Button variant="outline">
                 <Download className="mr-2 size-4" />
                 คู่มือการใช้งาน PDF
-              </Button>
+              </Button> */}
               <Button variant="outline">
                 <Download className="mr-2 size-4" />
                 แบบฟอร์มแจ้งซ่อม

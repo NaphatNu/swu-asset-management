@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getMockAssetByAssetId,
-  updateMockAssetByAssetId,
-} from '@/lib/api/mock-store';
 import { assetFormSchema } from '@/lib/validations';
 import type { Asset } from '@/types/asset';
+import { getMockAssetBySerialNumber, updateMockAssetBySerialNumber } from '@/lib/api/mock-store';
 
 type RouteContext = { params: Promise<{ assetId: string }> };
 
 export async function GET(_request: NextRequest, context: RouteContext) {
   const { assetId: raw } = await context.params;
   const assetId = decodeURIComponent(raw);
-  const asset = getMockAssetByAssetId(assetId);
+  const asset = getMockAssetBySerialNumber(assetId);
   if (!asset) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
@@ -37,7 +34,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
-  if (parsed.data.assetId !== routeAssetId) {
+  if (parsed.data.serialNumber !== routeAssetId) {
     return NextResponse.json(
       { error: 'รหัสครุภัณฑ์ไม่ตรงกับ URL' },
       { status: 400 }
@@ -47,29 +44,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const data = parsed.data;
   const patch: Pick<
     Asset,
+    | 'mainSerialNumber'
+    | 'serialNumber'
     | 'name'
-    | 'category'
-    | 'location'
     | 'status'
-    | 'description'
-    | 'purchaseDate'
-    | 'purchasePrice'
-    | 'warrantyExpiry'
+    | 'owner'
+    | 'location'
+    | 'acquiredDate'
   > = {
+    mainSerialNumber: data.mainSerialNumber,
+    serialNumber: data.serialNumber,
     name: data.name,
-    category: data.category,
-    location: data.location,
     status: data.status,
-    description: data.description?.trim() ? data.description : undefined,
-    purchaseDate: data.purchaseDate?.trim() ? data.purchaseDate : undefined,
-    purchasePrice:
-      typeof data.purchasePrice === 'number' ? data.purchasePrice : undefined,
-    warrantyExpiry: data.warrantyExpiry?.trim()
-      ? data.warrantyExpiry
-      : undefined,
+    owner: data.owner ?? '',
+    location: data.location,
+    acquiredDate: data.acquiredDate ?? '',
+    // description: data.description?.trim() ? data.description : undefined,
+    // purchaseDate: data.purchaseDate?.trim() ? data.purchaseDate : undefined,
+    // purchasePrice:
+    //   typeof data.purchasePrice === 'number' ? data.purchasePrice : undefined,
+    // warrantyExpiry: data.warrantyExpiry?.trim()
+    //   ? data.warrantyExpiry
+    //   : undefined,
   };
 
-  const updated = updateMockAssetByAssetId(routeAssetId, patch);
+  const updated = updateMockAssetBySerialNumber(routeAssetId, patch);
   if (!updated) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

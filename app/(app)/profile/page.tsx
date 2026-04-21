@@ -125,13 +125,13 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Button
+            {/* <Button
               variant="outline"
               className="mt-6 w-full"
               onClick={() => setIsEditing(true)}
             >
               แก้ไขโปรไฟล์
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
 

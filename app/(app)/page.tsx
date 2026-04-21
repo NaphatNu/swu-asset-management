@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Package, CheckCircle2, Wrench, AlertTriangle } from 'lucide-react';
+import { 
+  Package, 
+  CheckCircle2, 
+  Wrench, 
+  AlertTriangle, 
+  Users, 
+  Settings, 
+  HelpCircle, 
+  Trash2 
+} from 'lucide-react';
 import { PageHeader } from '@/components/layout';
 import {
   StatsCard,
@@ -45,39 +54,66 @@ export default function DashboardPage() {
         description="ภาพรวมระบบจัดการครุภัณฑ์ คณะวิศวกรรมศาสตร์ มศว"
       />
 
-      {/* Stats Cards */}
+      {/* Stats Cards - แถวที่ 1: สถานะการใช้งานทั่วไป */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="ครุภัณฑ์ทั้งหมด"
-          value={stats.totalAssets}
+          value={stats.total}
           icon={Package}
           variant="primary"
-          trend={{ value: 5, isPositive: true }}
         />
         <StatsCard
-          title="พร้อมใช้งาน"
-          value={stats.availableAssets}
+          title="ใช้งานปกติ"
+          value={stats.available}
           icon={CheckCircle2}
           variant="success"
         />
         <StatsCard
-          title="ซ่อมบำรุง"
-          value={stats.inRepairAssets}
+          title="ยืมใช้ภายใน"
+          value={stats.onLoan}
+          icon={Users}
+          variant="primary"
+        />
+        <StatsCard
+          title="สูญหาย"
+          value={stats.missing}
+          icon={HelpCircle}
+          variant="destructive"
+        />
+      </div>
+
+      {/* Stats Cards - แถวที่ 2: สถานะการซ่อมบำรุงและจำหน่าย */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          title="ซ่อม (ภายใน)"
+          value={stats.internalRepair}
           icon={Wrench}
           variant="warning"
         />
         <StatsCard
-          title="ชำรุด"
-          value={stats.damagedAssets}
+          title="ซ่อม (ภายนอก)"
+          value={stats.externalRepair}
+          icon={Settings}
+          variant="warning"
+        />
+        <StatsCard
+          title="รอจำหน่าย"
+          value={stats.pendingDisposal}
           icon={AlertTriangle}
           variant="destructive"
+        />
+        <StatsCard
+          title="จำหน่ายแล้ว"
+          value={stats.disposed}
+          icon={Trash2}
+          variant="secondary"
         />
       </div>
 
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-2">
         <StatusPieChart />
-        <CategoryBarChart />
+        {/* <CategoryBarChart /> */}
       </div>
     </div>
   );

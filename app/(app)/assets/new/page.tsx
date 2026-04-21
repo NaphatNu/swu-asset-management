@@ -18,16 +18,10 @@ export default function NewAssetPage() {
   const handleSubmit = async (data: AssetFormValues) => {
     setIsSubmitting(true);
 
-    const payload = {
-      ...data,
-      purchasePrice:
-        data.purchasePrice === '' ? undefined : Number(data.purchasePrice),
-    };
-
     try {
-      await createAsset(payload);
+      await createAsset(data);
       toast.success('เพิ่มครุภัณฑ์สำเร็จ', {
-        description: `รหัส ${data.assetId} ถูกเพิ่มเข้าระบบแล้ว`,
+        description: `รหัส ${data.serialNumber} ถูกเพิ่มเข้าระบบแล้ว`,
       });
       router.push('/assets');
     } catch (error) {

@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from './status-badge';
-import { categoryLabels } from '@/lib/mock-data';
+import { categoryLabels } from '@/constants/asset';
 import type { Asset } from '@/types/asset';
 
 interface AssetTableProps {
@@ -72,20 +72,20 @@ export function AssetTable({
                   <span className="font-medium truncate max-w-[200px] lg:max-w-[300px]">
                     {asset.name}
                   </span>
-                  <span className="text-xs text-muted-foreground md:hidden">
-                    {categoryLabels[asset.category]}
-                  </span>
+                  {/* <span className="text-xs text-muted-foreground md:hidden">
+                    {categoryLabels[asset.Category]}
+                  </span> */}
                 </div>
               </TableCell>
 
               {/* หมายเลขครุภัณฑ์ */}
               <TableCell className="font-mono text-sm">
-                {asset.assetId}
+                {asset.mainSerialNumber}
               </TableCell>
 
               {/* หมายเลขครุภัณฑ์เดิม */}
               <TableCell className="font-mono text-sm">
-                {asset.serial_number}
+                {asset.serialNumber}
               </TableCell>
 
               {/* สถานะ */}
@@ -102,8 +102,8 @@ export function AssetTable({
 
               {/* วันที่ได้มา */}
             <TableCell className="hidden md:table-cell">
-                {asset.purchaseDate
-                  ? new Date(asset.purchaseDate).toLocaleDateString('th-TH', {
+                {asset.acquiredDate
+                  ? new Date(asset.acquiredDate).toLocaleDateString('th-TH', {
                       day: '2-digit',
                       month: 'short',
                       year: '2-digit',
@@ -112,7 +112,7 @@ export function AssetTable({
               </TableCell>
 
               {/* <TableCell className="hidden md:table-cell">
-                {categoryLabels[asset.category]}
+                {categoryLabels[asset.Category]}
               </TableCell> */}
 
               <TableCell>

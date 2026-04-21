@@ -6,7 +6,7 @@ import type { DashboardStats } from '@/types/asset';
 export async function getDashboardStats(): Promise<DashboardStats> {
   console.log('[API][DASHBOARD] getDashboardStats called');
   try {
-    const { data } = await apiClient.get<DashboardStats>('/dashboard/stats');
+    const { data } = await apiClient.get<DashboardStats>('/assets/summary');
     console.log('[API][DASHBOARD] getDashboardStats success', data);
     return data;
   } catch (error) {

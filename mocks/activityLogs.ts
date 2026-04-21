@@ -1,0 +1,55 @@
+import type { ActivityLog } from '@/types/asset';
+
+export const mockActivityLogs: ActivityLog[] = [
+  {
+    id: '1',
+    action: 'เพิ่มครุภัณฑ์ใหม่',
+    assetId: '7440-001-0002',
+    assetName: 'โน๊ตบุ๊ค MacBook Pro 14"',
+    userId: '1',
+    userName: 'สมชาย ใจดี',
+    timestamp: '2024-03-10T14:30:00Z',
+    details: 'ลงทะเบียนครุภัณฑ์ใหม่',
+  },
+  {
+    id: '2',
+    action: 'แก้ไขข้อมูล',
+    assetId: '7440-003-0001',
+    assetName: 'เครื่องปรับอากาศ Daikin Inverter',
+    userId: '1',
+    userName: 'สมชาย ใจดี',
+    timestamp: '2024-03-09T10:15:00Z',
+    details: 'เปลี่ยนสถานะเป็น "ซ่อมบำรุง"',
+  },
+  {
+    id: '3',
+    action: 'แจ้งซ่อม',
+    assetId: '7440-001-0001',
+    assetName: 'คอมพิวเตอร์ตั้งโต๊ะ Dell OptiPlex 7090',
+    userId: '2',
+    userName: 'วิภา ชาญชัย',
+    timestamp: '2024-03-08T09:00:00Z',
+    details: 'แจ้งซ่อมเครื่องเปิดไม่ติด',
+  },
+  {
+    id: '4',
+    action: 'สร้าง QR Code',
+    assetId: '7440-002-0002',
+    assetName: 'ตู้เก็บเอกสาร 4 ชั้น',
+    userId: '1',
+    userName: 'สมชาย ใจดี',
+    timestamp: '2024-03-07T16:45:00Z',
+    details: 'สร้างและดาวน์โหลด QR Code',
+  },
+  {
+    id: '5',
+    action: 'ย้ายครุภัณฑ์',
+    assetId: '7440-001-0003',
+    assetName: 'โปรเจคเตอร์ Epson EB-2265U',
+    userId: '1',
+    userName: 'สมชาย ใจดี',
+    timestamp: '2024-03-06T11:20:00Z',
+    details: 'ย้ายจาก ห้อง 301 ไป ห้องประชุมใหญ่',
+  },
+];
+
