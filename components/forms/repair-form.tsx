@@ -91,7 +91,7 @@ export function RepairForm({
             <div className="relative">
               <Input
                 id="serialNumber"
-                placeholder="เช่น 7440-001-0001"
+                placeholder="เช่น 123-4567890123456789-4-56"
                 className="font-mono"
                 {...register('serialNumber')} // ใช้ register ตรงๆ
               />
@@ -99,7 +99,7 @@ export function RepairForm({
                 <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
               )}
             </div>
-            <p className="text-[0.8rem] text-muted-foreground">รูปแบบ: XXXX-XXX-XXXX</p>
+            <p className="text-[0.8rem] text-muted-foreground">รูปแบบ: XXX-XXXXXXXXXXXXXXXX-X-XX</p>
             {errors.serialNumber && (
               <p className="text-sm font-medium text-destructive">{errors.serialNumber.message}</p>
             )}

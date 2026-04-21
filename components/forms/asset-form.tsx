@@ -2,13 +2,13 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
 } from '@/components/ui/command';
 import { CalendarIcon, Check, ChevronsUpDown, ScanLine } from 'lucide-react';
 import { format } from 'date-fns';
@@ -34,6 +34,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { assetFormSchema, type AssetFormValues } from '@/lib/validations';
 import { categoryLabels, statusLabels, locationOptions } from '@/constants/asset';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface AssetFormProps {
   defaultValues?: Partial<AssetFormValues>;
@@ -58,6 +60,7 @@ export function AssetForm({
     control,
     setValue,
     watch,
+    formState: { errors },
   } = useForm<AssetFormValues>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: {
@@ -77,6 +80,36 @@ export function AssetForm({
     },
   });
 
+  const router = useRouter();
+
+  // 1. เฝ้าดูการเปลี่ยนแปลงของ serialNumber
+  const serialNumberValue = watch('serialNumber');
+
+  useEffect(() => {
+    if (serialNumberValue) {
+      // แยกข้อความด้วย "-"
+      const parts = serialNumberValue.split('-');
+
+      // ตรวจสอบว่ามีส่วนที่ 2 (index 1) หรือไม่
+      if (parts.length >= 2) {
+        const rawMainSerial = parts[1]; // ได้ค่า "3000000378580000"
+
+        // ถ้าต้องการใส่ขีดกลาง (dash) ให้ตรงตามรูปแบบ "หลัก-ย่อย" (12 หลักแรก - 4 หลักหลัง)
+        if (rawMainSerial.length >= 16) {
+          const main = rawMainSerial.substring(0, 12);
+          const sub = rawMainSerial.substring(12, 16);
+          const formatted = `${main}-${sub}`;
+
+          // 2. อัปเดตค่าลงใน mainSerialNumber อัตโนมัติ
+          setValue('mainSerialNumber', formatted, { shouldValidate: true });
+        } else {
+          // กรณีเลขไม่ครบ 16 หลัก แต่อยากให้แสดงค่าเท่าที่มีไปก่อน
+          setValue('mainSerialNumber', rawMainSerial, { shouldValidate: true });
+        }
+      }
+    }
+  }, [serialNumberValue, setValue]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Info */}
@@ -91,33 +124,46 @@ export function AssetForm({
             <label>รหัสครุภัณฑ์เดิม / Serial Number *</label>
             <div className="flex gap-2">
               <Input
-                {...register('serialNumber')}
-                className="font-mono"
                 disabled={lockAssetId}
+                placeholder='เช่น 123-4567890123456789-4-56'
+                className="font-mono"
+                {...register('serialNumber')}
               />
               {!lockAssetId && (
-                <Button type="button" variant="outline" size="icon">
+                <Button type="button" variant="outline" size="icon" onClick={() => router.push('/search')} >
                   <ScanLine className="size-4" />
                 </Button>
               )}
+
             </div>
+            {errors.serialNumber && (
+              <p className="text-sm font-medium text-destructive">{errors.serialNumber.message}</p>
+            )}
           </div>
 
           {/* Serial number */}
           <div>
             <label>หมายเลขครุภัณฑ์ หลัก-ย่อย *</label>
             <Input
-              {...register('mainSerialNumber')}
-              className="font-mono"
               disabled={lockAssetId}
+              placeholder='เช่น 123456789123-1234'
+              className="font-mono"
+              {...register('mainSerialNumber')}
             />
+            {errors.mainSerialNumber && (
+              <p className="text-sm font-medium text-destructive">{errors.mainSerialNumber.message}</p>
+            )}
           </div>
 
           {/* Name */}
           <div>
             <label>รายการครุภัณฑ์ *</label>
             <Input {...register('name')} />
+            {errors.name && (
+              <p className="text-sm font-medium text-destructive">{errors.name.message}</p>
+            )}
           </div>
+
 
           {/* Location */}
           <div>
@@ -174,6 +220,9 @@ export function AssetForm({
                 </Popover>
               )}
             />
+            {errors.location && (
+              <p className="text-sm font-medium text-destructive">{errors.location.message}</p>
+            )}
           </div>
 
           {/* Status */}
@@ -222,7 +271,7 @@ export function AssetForm({
             />
           </div> */}
 
-          
+
 
           {/* Description */}
           {/* <div>
