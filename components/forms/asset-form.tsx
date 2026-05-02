@@ -32,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { assetFormSchema, type AssetFormValues } from '@/lib/validations';
-import { categoryLabels, statusLabels, locationOptions } from '@/constants/asset';
+import { categoryLabels, statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -66,12 +66,13 @@ export function AssetForm({
     defaultValues: {
       mainSerialNumber: '',
       serialNumber: '',
-      name: '',
-      owner: '',
-      acquiredDate: '',
-      // category: undefined,
+      assetName: '',
       location: '',
       status: 'available',
+      condition: 'normal',
+      ownerId: '',
+      acquiredDate: '',
+      // category: undefined,
       // description: '',
       // purchaseDate: '',
       // purchasePrice: undefined,
@@ -158,9 +159,9 @@ export function AssetForm({
           {/* Name */}
           <div>
             <label>รายการครุภัณฑ์ *</label>
-            <Input {...register('name')} />
-            {errors.name && (
-              <p className="text-sm font-medium text-destructive">{errors.name.message}</p>
+            <Input {...register('assetName')} />
+            {errors.assetName && (
+              <p className="text-sm font-medium text-destructive">{errors.assetName.message}</p>
             )}
           </div>
 
@@ -248,19 +249,21 @@ export function AssetForm({
             />
           </div>
 
-          {/* Category
+          
+
+          {/* Condition */}
           <div>
-            <label>ประเภท *</label>
+            <label>สภาพ *</label>
             <Controller
               control={control}
-              name="category"
+              name="condition"
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภท" />
+                    <SelectValue placeholder="เลือกสภาพ" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(categoryLabels).map(([key, label]) => (
+                    {Object.entries(conditionLabels).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
                       </SelectItem>
@@ -269,7 +272,7 @@ export function AssetForm({
                 </Select>
               )}
             />
-          </div> */}
+          </div>
 
 
 
@@ -323,15 +326,6 @@ export function AssetForm({
               )}
             />
           </div>
-
-          {/* Price */}
-          {/* <div>
-            <label>ราคา</label>
-            <Input
-              type="number"
-              {...register('purchasePrice')}
-            />
-          </div> */}
 
         </CardContent>
       </Card>

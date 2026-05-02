@@ -51,7 +51,7 @@ export default function NewAssetPage() {
         </Button>
       </PageHeader>
 
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl">
         <AssetForm onSubmit={handleSubmit} isSubmitting={isSubmitting} onCancel={handleCancel}/>
       </div>
     </div>

@@ -51,5 +51,15 @@ export const mockActivityLogs: ActivityLog[] = [
     timestamp: '2024-03-06T11:20:00Z',
     details: 'ย้ายจาก ห้อง 301 ไป ห้องประชุมใหญ่',
   },
+  {
+    id: '6',
+    action: 'ลบครุภัณฑ์',
+    assetId: '7440-003-0002',
+    assetName: 'เครื่องพิมพ์ HP LaserJet Pro M404dn',
+    userId: '1',
+    userName: 'สมชาย ใจดี',
+    timestamp: '2024-03-05T14:00:00Z',
+    details: 'ลบครุภัณฑ์ที่ชำรุดและไม่สามารถซ่อมได้', 
+  }
 ];
 

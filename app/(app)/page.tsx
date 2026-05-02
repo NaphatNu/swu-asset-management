@@ -70,13 +70,13 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="ยืมใช้ภายใน"
-          value={stats.onLoan}
+          value={stats.inUse}
           icon={Users}
           variant="primary"
         />
         <StatsCard
           title="สูญหาย"
-          value={stats.missing}
+          value={stats.lost}
           icon={HelpCircle}
           variant="destructive"
         />
@@ -85,20 +85,14 @@ export default function DashboardPage() {
       {/* Stats Cards - แถวที่ 2: สถานะการซ่อมบำรุงและจำหน่าย */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="ซ่อม (ภายใน)"
-          value={stats.internalRepair}
+          title="อยู่ระหว่างการซ่อม"
+          value={stats.underRepair}
           icon={Wrench}
           variant="warning"
         />
         <StatsCard
-          title="ซ่อม (ภายนอก)"
-          value={stats.externalRepair}
-          icon={Settings}
-          variant="warning"
-        />
-        <StatsCard
-          title="รอจำหน่าย"
-          value={stats.pendingDisposal}
+          title="อยู่ระหว่างดำเนินการจำหน่าย"
+          value={stats.pendingDispose}
           icon={AlertTriangle}
           variant="destructive"
         />

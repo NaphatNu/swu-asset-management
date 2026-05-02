@@ -28,47 +28,46 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { categoryLabels, statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
-import type { AssetFilters as AssetFiltersType, AssetStatus, LocationOption, AssetCondition } from '@/types/asset';
+import type { AssetLogFilters as AssetLogFiltersType } from '@/types/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { actionLabels } from '@/constants/asset';
 
-interface AssetFiltersProps {
-  filters: AssetFiltersType;
-  onFiltersChange: (filters: AssetFiltersType) => void;
+interface AssetLogFiltersProps {
+  filters: AssetLogFiltersType;
+  onFiltersChange: (filters: AssetLogFiltersType) => void;
 }
 
-export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
+export function AssetLogFilters({ filters, onFiltersChange }: AssetLogFiltersProps) {
   const isMobile = useIsMobile();
 
+  // นับจำนวน Filter ที่ถูกใช้งาน (ไม่นับชื่อและ pagination)
   const activeFiltersCount = [
-    filters.assetName,
-    filters.status,
-    filters.location,
-    filters.condition,
+    filters.action,
     filters.startDate,
     filters.endDate,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    onFiltersChange({ assetName: filters.assetName });
+    // ล้าง filter ทั้งหมดแต่คงค่าการค้นหาชื่อไว้ (หรือล้างหมดเลยก็ได้ตาม UX ที่ต้องการ)
+    onFiltersChange({ assetName: filters.assetName, page: 1, pageSize: filters.pageSize });
   };
 
-  // --- Logic การจัดการวันที่ (อัปเดตให้รับค่าเป็น Date Object จาก shadcn) ---
   const handleStartDateChange = (date: Date | undefined) => {
-    const today = format(new Date(), 'yyyy-MM-dd'); // Format วันนี้เป็น yyyy-MM-dd
-
+    const today = format(new Date(), 'yyyy-MM-dd');
     if (date) {
       const formattedDate = format(date, 'yyyy-MM-dd');
       onFiltersChange({
         ...filters,
         startDate: formattedDate,
         endDate: filters.endDate ? filters.endDate : today,
+        page: 1, // รีเซ็ตหน้าเมื่อมีการกรอง
       });
     } else {
       onFiltersChange({
         ...filters,
         startDate: undefined,
         endDate: undefined,
+        page: 1,
       });
     }
   };
@@ -78,20 +77,59 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
     onFiltersChange({
       ...filters,
       endDate: date ? format(date, 'yyyy-MM-dd') : undefined,
+      page: 1,
     });
   };
 
-  // ฟังก์ชันช่วยจำกัดไม่ให้เลือกวันสิ้นสุดก่อนวันเริ่มต้น
   const disableDatesBeforeStart = (date: Date) => {
     if (!filters.startDate) return false;
-    const startDate = new Date(filters.startDate + 'T00:00:00'); // Force local time
+    const startDate = new Date(filters.startDate + 'T00:00:00');
     startDate.setHours(0, 0, 0, 0);
     return date < startDate;
   };
 
   const FilterContent = () => (
     <div className="space-y-4">
-      {/* ส่วนกรอกวันที่ สำหรับ Mobile (ใช้ shadcn DatePicker) */}
+      {/* Search สำหรับ Mobile */}
+      {isMobile && (
+        <div className="space-y-2 px-4">
+          <label className="text-sm font-medium">ชื่อครุภัณฑ์</label>
+          <Input
+            placeholder="ค้นหาชื่อครุภัณฑ์..."
+            value={filters.assetName || ''}
+            onChange={(e) => onFiltersChange({ ...filters, assetName: e.target.value, page: 1 })}
+          />
+        </div>
+      )}
+
+      {/* Action Select */}
+      <div className="space-y-2 px-4">
+        <label className="text-sm font-medium">ประเภทรายการ</label>
+        <Select
+          value={filters.action || 'all'}
+          onValueChange={(value) =>
+            onFiltersChange({
+              ...filters,
+              action: value === 'all' ? undefined : value,
+              page: 1,
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="ทุกรายการ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">ทุกรายการ</SelectItem>
+            {Object.entries(actionLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Date Range สำหรับ Mobile */}
       <div className="grid grid-cols-2 gap-4 px-4">
         <div className="space-y-2 flex flex-col">
           <label className="text-sm font-medium text-muted-foreground">วันที่เริ่มต้น</label>
@@ -113,7 +151,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                 mode="single"
                 selected={filters.startDate ? new Date(filters.startDate) : undefined}
                 onSelect={handleStartDateChange}
-                initialFocus
+                captionLayout="dropdown"
               />
             </PopoverContent>
           </Popover>
@@ -141,94 +179,18 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                 onSelect={handleEndDateChange}
                 disabled={disableDatesBeforeStart}
                 initialFocus
+                captionLayout="dropdown"
+                fromYear={2020}
+                toYear={2030}
               />
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      <div className="space-y-2 px-4">
-        <label className="text-sm font-medium">สถานที่ตั้ง</label>
-        <Select
-          value={filters.location || 'all'}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              location: value === 'all' ? undefined : (value as LocationOption),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="ทั้งหมด" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">ทั้งหมด</SelectItem>
-            {Object.entries(locationOptions).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2 px-4">
-        <label className="text-sm font-medium">สถานะ</label>
-        <Select
-          value={filters.status || 'all'}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              status: value === 'all' ? undefined : (value as AssetStatus),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="ทั้งหมด" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">ทั้งหมด</SelectItem>
-            {Object.entries(statusLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2 px-4">
-        <label className="text-sm font-medium">สภาพปัจจุบัน</label>
-        <Select
-          value={filters.condition || 'all'}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              condition: value === 'all' ? undefined : (value as AssetCondition),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="ทั้งหมด" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">ทั้งหมด</SelectItem>
-            {Object.entries(conditionLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       {activeFiltersCount > 0 && (
-        <div className="px-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={clearFilters}
-          >
+        <div className="px-4 pt-2">
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
             <X className="mr-2 size-4" />
             ล้างตัวกรอง
           </Button>
@@ -239,15 +201,13 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      {/* Search Input */}
+      {/* Search Input (Desktop & Mobile) */}
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="ค้นหาด้วยชื่อครุภัณฑ์..."
           value={filters.assetName || ''}
-          onChange={(e) =>
-            onFiltersChange({ ...filters, assetName : e.target.value })
-          }
+          onChange={(e) => onFiltersChange({ ...filters, assetName: e.target.value, page: 1 })}
           className="pl-9"
         />
         {filters.assetName && (
@@ -255,14 +215,13 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
             variant="ghost"
             size="icon"
             className="absolute right-1 top-1/2 size-7 -translate-y-1/2"
-            onClick={() => onFiltersChange({ ...filters, assetName: '' })}
+            onClick={() => onFiltersChange({ ...filters, assetName: '', page: 1 })}
           >
             <X className="size-4" />
           </Button>
         )}
       </div>
 
-      {/* Mobile: Filter Sheet */}
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
@@ -278,56 +237,34 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           </SheetTrigger>
           <SheetContent side="bottom" className="h-auto max-h-[90vh] overflow-y-auto rounded-t-xl">
             <SheetHeader className="mb-4">
-              <SheetTitle>ตัวกรอง</SheetTitle>
-              <SheetDescription>กรองรายการครุภัณฑ์ตามเงื่อนไข</SheetDescription>
+              <SheetTitle>ตัวกรองประวัติรายการ</SheetTitle>
+              <SheetDescription>กรองข้อมูลประวัติการทำรายการตามเงื่อนไข</SheetDescription>
             </SheetHeader>
-            <div className="pb-4">
+            <div className="pb-8">
               <FilterContent />
             </div>
           </SheetContent>
         </Sheet>
       ) : (
-        /* Desktop: Inline Selects & Dates */
-        <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
-          {/* ส่วนเลือกวันที่ (Desktop) - ปรับเป็น shadcn Popover */}
-
+        /* Desktop: Inline Select & Dates */
+        <div className="flex items-center gap-2">
+          {/* Action Select */}
           <Select
-            value={filters.location || 'all'}
+            value={filters.action || 'all'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                location: value === 'all' ? undefined : (value as LocationOption),
+                action: value === 'all' ? undefined : value,
+                page: 1,
               })
             }
           >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="สถานที่ตั้ง" />
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="ประเภทรายการ" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">ทุกสถานที่</SelectItem>
-              {Object.entries(locationOptions).map(([key, label]) => (
-                <SelectItem key={key} value={label}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={filters.status || 'all'}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                status: value === 'all' ? undefined : (value as AssetStatus),
-              })
-            }
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="สถานะ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทุกสถานะ</SelectItem>
-              {Object.entries(statusLabels).map(([key, label]) => (
+              <SelectItem value="all">ทุกประเภท</SelectItem>
+              {Object.entries(actionLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>
                   {label}
                 </SelectItem>
@@ -335,31 +272,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
             </SelectContent>
           </Select>
 
-          <Select
-            value={filters.condition || 'all'}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                condition: value === 'all' ? undefined : (value as AssetCondition),
-              })
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="สภาพปัจจุบัน" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทุกสภาพ</SelectItem>
-              {Object.entries(conditionLabels).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="flex items-center gap-1 bg-background border border-input rounded-md px-2 py-1 h-9 focus-within:ring-1 focus-within:ring-ring">
-            
-            {/* Popover วันที่เริ่มต้น */}
+          {/* Date Picker Container */}
+          <div className="flex items-center gap-1 bg-background border border-input rounded-md px-2 py-1 h-10 focus-within:ring-1 focus-within:ring-ring">
             <div className="flex items-center">
               <span className="text-xs font-medium text-muted-foreground select-none pl-1 mr-1">เริ่ม:</span>
               <Popover>
@@ -371,7 +285,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                       !filters.startDate && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className="mr-2 size-3" />
+                    <CalendarIcon className="mr-1 size-3" />
                     {filters.startDate ? format(new Date(filters.startDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
                   </Button>
                 </PopoverTrigger>
@@ -382,6 +296,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                     onSelect={handleStartDateChange}
                     initialFocus
                     captionLayout="dropdown"
+                    fromYear={2020}
+                    toYear={2030}
                   />
                 </PopoverContent>
               </Popover>
@@ -389,7 +305,6 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
             <span className="text-muted-foreground/30 text-sm">|</span>
 
-            {/* Popover วันที่สิ้นสุด */}
             <div className="flex items-center">
               <span className="text-xs font-medium text-muted-foreground select-none pl-1 mr-1">สิ้นสุด:</span>
               <Popover>
@@ -402,7 +317,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                       !filters.endDate && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className="mr-2 size-3" />
+                    <CalendarIcon className="mr-1 size-3" />
                     {filters.endDate ? format(new Date(filters.endDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
                   </Button>
                 </PopoverTrigger>
@@ -414,6 +329,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
                     disabled={disableDatesBeforeStart}
                     initialFocus
                     captionLayout="dropdown"
+                    fromYear={2020}
+                    toYear={2030}
                   />
                 </PopoverContent>
               </Popover>
@@ -421,7 +338,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           </div>
 
           {activeFiltersCount > 0 && (
-            <Button variant="ghost" size="icon" onClick={clearFilters}>
+            <Button variant="ghost" size="icon" onClick={clearFilters} title="ล้างตัวกรอง">
               <X className="size-4" />
             </Button>
           )}

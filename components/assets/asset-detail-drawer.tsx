@@ -35,7 +35,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from './status-badge';
-import { categoryLabels } from '@/constants/asset';
+import { categoryLabels, conditionLabels } from '@/constants/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { Asset } from '@/types/asset';
 
@@ -124,13 +124,18 @@ function AssetDetailContent({
           <DetailItem
             icon={User}
             label="ผู้รับผิดชอบ"
-            value={asset.owner || 'ไม่ได้ระบุ'}
+            value={asset.ownerId || 'ไม่ได้ระบุ'}
           />
           {/* <DetailItem
-            icon={FileText}
-            label="รายละเอียด"
-            value={asset.Description}
-          /> */}
+              icon={FileText}
+              label="รายละเอียด"
+              value={asset.Description}
+            /> */}
+          <DetailItem
+            icon={Shield}
+            label="สภาพปัจจุบัน"
+            value={conditionLabels[asset.condition]}
+          />
         </div>
 
         <Separator />
@@ -226,7 +231,7 @@ export function AssetDetailDrawer({
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader className="text-left">
             <DrawerTitle className="text-lg leading-tight pr-8">
-              {asset.name}
+              {asset.assetName}
             </DrawerTitle>
             <DrawerDescription className="sr-only">
               รายละเอียดครุภัณฑ์
@@ -255,7 +260,7 @@ export function AssetDetailDrawer({
       <DialogContent className="max-w-lg p-0"> {/* p-0 เพื่อให้จัดการ padding ภายในเองได้สวยเหมือนเดิม */}
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-semibold leading-tight">
-            {asset.name}
+            {asset.assetName}
           </DialogTitle>
           <DialogDescription className="sr-only">
             รายละเอียดครุภัณฑ์

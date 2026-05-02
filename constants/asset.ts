@@ -1,4 +1,4 @@
-import type { AssetStatus, RepairStatus } from '@/types/asset';
+import type { AssetCondition, AssetStatus, RepairStatus, RepairType } from '@/types/asset';
 
 // Category labels for display
 export const categoryLabels: Record<string, string> = {
@@ -12,15 +12,38 @@ export const categoryLabels: Record<string, string> = {
 // Status labels for display
 export const statusLabels: Record<AssetStatus, string> = {
   available: 'ใช้งานได้ตามปกติ',
-  'on-loan': 'ยืมใช้ภายในหน่วยงาน',
-  'internal-repair': 'ชำรุดระหว่างซ่อม (ภายใน)',
-  'external-repair': 'ชำรุดระหว่างซ่อม (ภายนอก)',
+  'in-use': 'ใช้งานอยู่',
+  'under-repair': 'ชำรุดระหว่างซ่อม',
+  lost: 'สูญหาย',
   'pending-disposal': 'รอจำหน่าย',
-  missing: 'สูญหาย',
   disposed: 'จำหน่ายออก/ตัดจำหน่าย',
 };
 
+// Condition labels for display
+export const conditionLabels: Record<AssetCondition, string> = {
+  normal: 'ปกติ',
+  'minor-damage': 'ชำรุดเล็กน้อย',
+  'major-damage': 'ชำรุดมาก',
+  critical: 'ชำรุดขั้นวิกฤต',
+};
+
+// Action labels for display
+export const actionLabels: Record<string, string> = {
+  'update-condition': 'อัปเดตสภาพ',
+  'update-status': 'อัปเดตสถานะ',
+  'update-repair': 'อัปเดตการซ่อม',
+  move: 'ย้ายครุภัณฑ์',
+};
+
+// Repair status labels for display
+
 export const repairStatusLabels: Record<RepairStatus, string> = {
+  'open': 'รอดำเนินการ',
+  'in-progress': 'กำลังซ่อม',
+  'completed': 'ซ่อมเสร็จแล้ว',
+};
+
+export const repairTypeLabels: Record<RepairType, string> = {
   'internal-repair': 'ซ่อมภายใน มหาวิทยาลัย',
   'external-repair': 'ซ่อมภายนอก มหาวิทยาลัย',
 };

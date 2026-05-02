@@ -7,6 +7,8 @@ import type {
   RepairRequest,
   RepairPriority,
   DashboardStats,
+  GetAssetsResponse,
+  GetRepairResponse,
 } from '@/types/asset';
 
 const assetsStore: Asset[] = [...mockAssets];
@@ -23,9 +25,9 @@ export function updateMockAssetBySerialNumber(
     Asset,
     | 'mainSerialNumber'
     | 'serialNumber'
-    | 'name'
+    | 'assetName'
     | 'status'
-    | 'owner'
+    | 'ownerId'
     | 'location'
     | 'acquiredDate'
   >
@@ -42,15 +44,15 @@ export function updateMockAssetBySerialNumber(
   return updated;
 }
 
-export function listMockAssets(filters?: AssetFilters): Asset[] {
-  if (!filters) return [...assetsStore];
+export function listMockAssets(filters?: AssetFilters): GetAssetsResponse {
+  if (!filters) return { data: [...assetsStore], total: assetsStore.length, page: 1, pageSize: assetsStore.length };
 
-  return assetsStore.filter((asset) => {
+  const filteredAssets = assetsStore.filter((asset) => {
     if (filters.name) {
       const query = filters.name.toLowerCase();
       const matched =
         asset.serialNumber.toLowerCase().includes(query) ||
-        asset.name.toLowerCase().includes(query);
+        asset.assetName.toLowerCase().includes(query);
       if (!matched) return false;
     }
 
@@ -58,6 +60,7 @@ export function listMockAssets(filters?: AssetFilters): Asset[] {
     if (filters.location && asset.location !== filters.location) return false;
     return true;
   });
+  return { data: filteredAssets, total: filteredAssets.length, page: 1, pageSize: filteredAssets.length };
 }
 
 export function createMockAsset(
@@ -65,9 +68,9 @@ export function createMockAsset(
     Asset,
     | 'mainSerialNumber'
     | 'serialNumber'
-    | 'name'
+    | 'assetName'
     | 'status'
-    | 'owner'
+    | 'ownerId'
     | 'location'
     | 'acquiredDate'
   >
@@ -78,40 +81,54 @@ export function createMockAsset(
     ...data,
     createdAt: now,
     updatedAt: now,
+    condition: 'normal',
+    updateByName: 'mock-user',
+    createdByName: 'mock-user',
   };
 
   assetsStore.unshift(newAsset);
   dashboardStatsStore.total += 1;
   if (newAsset.status === 'available') dashboardStatsStore.available += 1;
-  if (newAsset.status === 'internal-repair') dashboardStatsStore.internalRepair += 1;
-  if (newAsset.status === 'pending-disposal') dashboardStatsStore.externalRepair += 1;
+  if (newAsset.status === 'under-repair') dashboardStatsStore.underRepair += 1;
+  if (newAsset.status === 'pending-disposal') dashboardStatsStore.pendingDispose += 1;
 
   return newAsset;
 }
 
-export function listMockRepairs(): RepairRequest[] {
-  return [...repairsStore];
+export function listMockRepairs(): GetRepairResponse {
+  return { data: [...repairsStore], total: repairsStore.length, page: 1, pageSize: repairsStore.length };
 }
 
 export function createMockRepair(data: {
-  serialNumber: string;
-  name?: string;
+  assetId: string;
   description: string;
+  status?: string;
+  type?: string;
 }): RepairRequest {
-  const assetName =
-    assetsStore.find((asset) => asset.serialNumber === data.serialNumber)?.name ||
-    data.name || 'ไม่ระบุชื่อครุภัณฑ์';
+  // 1. ค้นหาข้อมูลครุภัณฑ์จาก assetsStore เพื่อดึง serialNumber และ assetName
+  // สมมติว่า assetsStore เก็บ Object ที่มี { id, serialNumber, assetName }
+  const asset = assetsStore.find((a) => a.id === data.assetId || a.serialNumber === data.assetId);
+
+  // 2. สร้าง Object ใหม่ตาม interface RepairRequest เป๊ะๆ
   const newRequest: RepairRequest = {
-    id: `${repairsStore.length + 1}`,
-    serialNumber: data.serialNumber,
-    name: assetName,
+    id: `MOCK-${Math.floor(Math.random() * 10000)}`, // จำลอง ID
+    assetId: data.assetId,
+    serialNumber: asset?.serialNumber || 'N/A', // ดึงจาก store ถ้าหาไม่เจอใส่ N/A
+    assetName: asset?.assetName || 'ไม่ระบุชื่อครุภัณฑ์', // ดึงจาก store
     description: data.description,
-    repairStatus: 'internal-repair',
-    reportedBy: 'mock-user',
-    requestDate: new Date().toISOString(),
+    status: (data.status as any) || 'pending', // ตาม Type RepairStatus
+    type: (data.type as any) || 'internal-repair', // ตาม Type RepairType
+    reportedByName: 'ผู้ใช้งานทดสอบ (Mock)', // ต้องมีเพราะ UI เรียกใช้
+    createdAt: new Date().toISOString(), // ใช้ ISO String
   };
 
-  repairsStore.unshift(newRequest);
+  // 3. บันทึกลงใน Store จำลอง (repairsStore)
+  // หมายเหตุ: ถ้า API จริงส่งกลับมาเป็น { data: [...] } 
+  // ตัว repairsStore ของคุณอาจจะต้องเป็น Array ตรงๆ เพื่อให้ .unshift ทำงานได้
+  if (Array.isArray(repairsStore)) {
+    repairsStore.unshift(newRequest);
+  }
+
   return newRequest;
 }
 

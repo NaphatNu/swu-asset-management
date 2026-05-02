@@ -3,7 +3,7 @@ import axios from 'axios';
 const DEFAULT_TIMEOUT_MS = 10000;
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
+  baseURL: process.env.API_BASE_URL || '/api',
   timeout: DEFAULT_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',

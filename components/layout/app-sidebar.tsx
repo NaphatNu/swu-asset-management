@@ -13,6 +13,8 @@ import {
   HelpCircle,
   Settings,
   LogOut,
+  ClipboardCheck,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -55,6 +57,11 @@ const mainNavItems = [
     icon: Plus,
   },
   {
+    title: 'ประเมินครุภัณฑ์',
+    href: '/inspection',
+    icon: ClipboardCheck,
+  },
+  {
     title: 'รายการครุภัณฑ์',
     href: '/assets',
     icon: List,
@@ -66,6 +73,11 @@ const toolsNavItems = [
     title: 'สร้าง QR Code',
     href: '/qr-generator',
     icon: QrCode,
+  },
+  {
+    title: 'ประวัติการทำรายการ',
+    href: '/assessment-log',
+    icon: ClipboardList,
   },
   {
     title: 'แจ้งซ่อม',

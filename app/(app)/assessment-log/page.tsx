@@ -13,27 +13,30 @@ import {
   AssetTable,
   AssetDetailDrawer,
 } from '@/components/assets';
-import { getAssets, getAssetsSearch } from '@/lib/api';
+import { getAssets, getAssetsLogs, getAssetsSearch } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { Asset, AssetFilters as FiltersType } from '@/types/asset';
+import type { Asset, AssetLog, AssetFilters as FiltersType } from '@/types/asset';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { AssetLogTable } from '@/components/assets/asset-log-table';
+import { AssetCardLog } from '@/components/assets/asset-card-log';
+import { AssetLogFilters } from '@/components/assets/asset-log-filters';
 
 export default function AssetsPage() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [filters, setFilters] = useState<FiltersType>({});
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assets, setAssets] = useState<AssetLog[]>([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, pageSize: 20 });
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<AssetLog | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
 
-    getAssets({ ...filters, page: pagination.page, pageSize: pagination.pageSize })
+    getAssetsLogs({ ...filters, page: pagination.page, pageSize: pagination.pageSize })
       .then((res) => {
         if (mounted) {
           setAssets(res.data); // เก็บเฉพาะ Array ของ Assets
@@ -63,27 +66,27 @@ export default function AssetsPage() {
   // คำนวณจำนวนหน้าทั้งหมด
   const totalPages = Math.ceil(pagination.total / pagination.pageSize);
 
-  const handleViewAsset = (asset: Asset) => {
+  const handleViewAsset = (asset: AssetLog) => {
     setSelectedAsset(asset);
     setDrawerOpen(true);
   };
 
-  const handleEditAsset = (asset: Asset) => {
-    router.push(`/assets/${encodeURIComponent(asset.serialNumber)}`);
+  const handleEditAsset = (asset: AssetLog) => {
+    router.push(`/assets/${encodeURIComponent(asset.assetSerialNumber)}`);
   };
 
-  const handleGenerateQR = (asset: Asset) => {
-    router.push(`/qr-generator?assetId=${asset.serialNumber}`);
+  const handleGenerateQR = (asset: AssetLog) => {
+    router.push(`/qr-generator?assetId=${asset.assetSerialNumber}`);
   };
 
-  const handleRepair = (asset: Asset) => {
-    router.push(`/repair?serialNumber=${asset.serialNumber}`);
+  const handleRepair = (asset: AssetLog) => {
+    router.push(`/repair?serialNumber=${asset.assetSerialNumber}`);
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="รายการครุภัณฑ์"
+        title="ประวัติการทำรายการ"
         description={`ทั้งหมด ${assets.length} รายการ`}
       >
         <Button asChild>
@@ -95,7 +98,7 @@ export default function AssetsPage() {
       </PageHeader>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <AssetFilters filters={filters} onFiltersChange={setFilters} />
+        <AssetLogFilters filters={filters} onFiltersChange={setFilters} />
 
         {!isMobile && (
           <ToggleGroup
@@ -117,7 +120,7 @@ export default function AssetsPage() {
       {isMobile ? (
         <div className="space-y-3">
           {assets.map((asset) => (
-            <AssetCard
+            <AssetCardLog
               key={asset.id}
               asset={asset}
               onClick={() => handleViewAsset(asset)}
@@ -135,7 +138,7 @@ export default function AssetsPage() {
       ) : viewMode === 'grid' ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {assets.map((asset) => (
-            <AssetCard
+            <AssetCardLog
               key={asset.id}
               asset={asset}
               onClick={() => handleViewAsset(asset)}
@@ -151,8 +154,8 @@ export default function AssetsPage() {
           )}
         </div>
       ) : (
-        <AssetTable
-          assets={assets}
+        <AssetLogTable
+          assetsLogs={assets}
           pagination={pagination} // { page: 1, pageSize: 20, total: 150 }
           onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))}
           onPageSizeChange={(newSize) => setPagination(prev => ({ ...prev, pageSize: newSize, page: 1 }))}
@@ -163,14 +166,14 @@ export default function AssetsPage() {
         />
       )}
 
-      <AssetDetailDrawer
+      {/* <AssetDetailDrawer
         asset={selectedAsset}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onEdit={handleEditAsset}
         onGenerateQR={handleGenerateQR}
         onRepair={handleRepair}
-      />
+      /> */}
     </div>
   );
 }

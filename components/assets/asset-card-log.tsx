@@ -4,16 +4,16 @@ import { MapPin, Calendar, Tag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from './status-badge';
 import { categoryLabels } from '@/constants/asset';
-import type { Asset } from '@/types/asset';
+import type { Asset, AssetLog } from '@/types/asset';
 import { cn } from '@/lib/utils';
 
 interface AssetCardProps {
-  asset: Asset;
+  asset: AssetLog;
   onClick?: () => void;
   className?: string;
 }
 
-export function AssetCard({ asset, onClick, className }: AssetCardProps) {
+export function AssetCardLog({ asset, onClick, className }: AssetCardProps) {
   return (
     <Card
       className={cn(
@@ -27,9 +27,9 @@ export function AssetCard({ asset, onClick, className }: AssetCardProps) {
           <div className="flex-1 space-y-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-muted-foreground">
-                {asset.serialNumber}
+                {asset.assetSerialNumber}
               </span>
-              <StatusBadge status={asset.status} />
+              {/* <StatusBadge status={asset.status} /> */}
             </div>
             <h3 className="font-semibold text-sm leading-tight line-clamp-2">
               {asset.assetName}
@@ -41,13 +41,13 @@ export function AssetCard({ asset, onClick, className }: AssetCardProps) {
               </div> */}
               <div className="flex items-center gap-1">
                 <MapPin className="size-3" />
-                <span className="truncate max-w-[150px]">{asset.location}</span>
+                <span className="truncate max-w-[150px]">{asset.action}</span>
               </div>
-              {asset.acquiredDate && (
+              {asset.createdAt && (
                 <div className="flex items-center gap-1">
                   <Calendar className="size-3" />
                   <span>
-                    {new Date(asset.acquiredDate).toLocaleDateString('th-TH', {
+                    {new Date(asset.createdAt).toLocaleDateString('th-TH', {
                       year: 'numeric',
                       month: 'short',
                     })}

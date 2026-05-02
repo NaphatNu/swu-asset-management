@@ -46,17 +46,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     Asset,
     | 'mainSerialNumber'
     | 'serialNumber'
-    | 'name'
+    | 'assetName'
     | 'status'
-    | 'owner'
+    | 'ownerId'
     | 'location'
     | 'acquiredDate'
   > = {
     mainSerialNumber: data.mainSerialNumber,
     serialNumber: data.serialNumber,
-    name: data.name,
+    assetName: data.assetName,
     status: data.status,
-    owner: data.owner ?? '',
+    ownerId: data.ownerId ?? '',
     location: data.location,
     acquiredDate: data.acquiredDate ?? '',
     // description: data.description?.trim() ? data.description : undefined,

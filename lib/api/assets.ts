@@ -7,15 +7,16 @@ import {
   updateMockAssetBySerialNumber,
 } from '@/lib/api/mock-store';
 import type { AssetFormValues } from '@/lib/validations';
-import type { Asset, AssetFilters } from '@/types/asset';
+import type { Asset, AssetFilters, GetAssetsLogsResponse, GetAssetsResponse } from '@/types/asset';
 
 interface CreateAssetBackendPayload {
   mainSerialNumber: string;
   serialNumber: string;
-  name: string;
-  status: Asset['status'];
-  owner: string;
+  assetName: string;
   location: string;
+  status: Asset['status'];
+  condition: Asset['condition'];
+  ownerId: string;
   acquiredDate: string;
 }
 
@@ -23,42 +24,43 @@ function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAsse
   return {
     mainSerialNumber: values.mainSerialNumber,
     serialNumber: values.serialNumber,
-    name: values.name,
-    status: values.status,
-    owner: values.owner ?? '',
+    assetName: values.assetName,
     location: values.location,
+    status: values.status,
+    condition: values.condition ?? 'normal',
+    ownerId: values.ownerId ?? '',
     acquiredDate: values.acquiredDate ?? '',
   };
 }
 
-export async function getAssets(filters?: AssetFilters): Promise<Asset[]> {
+export async function getAssets(filters?: AssetFilters): Promise<GetAssetsResponse> {
   console.log('[API][ASSETS] getAssets called', { filters });
   try {
-    const { data } = await apiClient.get<Asset[]>('/assets', { params: filters });
-    console.log('[API][ASSETS] getAssets success', { count: data.length });
+    const { data } = await apiClient.get<GetAssetsResponse>('/assets', { params: filters });
+    console.log('[API][ASSETS] getAssets success', { count: data.data.length });
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][ASSETS] getAssets fallback to mock data');
       const fallbackData = listMockAssets(filters);
-      console.log('[API][ASSETS] mock assets result', { count: fallbackData.length });
+      console.log('[API][ASSETS] mock assets result', { count: fallbackData.data.length });
       return fallbackData;
     }
     throw error;
   }
 }
 
-export async function getAssetsSearch(filters?: AssetFilters): Promise<Asset[]> {
+export async function getAssetsSearch(filters?: AssetFilters): Promise<GetAssetsResponse> {
   console.log('[API][ASSETS] getAssetsSearch called', { filters });
   try {
-    const { data } = await apiClient.get<Asset[]>('/assets/search', { params: filters });
-    console.log('[API][ASSETS] getAssetsSearch success', { count: data.length });
+    const { data } = await apiClient.get<GetAssetsResponse>('/assets', { params: filters });
+    console.log('[API][ASSETS] getAssetsSearch success', { count: data.data.length });
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][ASSETS] getAssetsSearch fallback to mock data');
       const fallbackData = listMockAssets(filters);
-      console.log('[API][ASSETS] mock assets result', { count: fallbackData.length });
+      console.log('[API][ASSETS] mock assets result', { count: fallbackData.data.length });
       return fallbackData;
     }
     throw error;
@@ -66,7 +68,7 @@ export async function getAssetsSearch(filters?: AssetFilters): Promise<Asset[]> 
 }
 
 export async function getAssetBySerialNumber(serialNumber: string): Promise<Asset | null> {
-  const path = `/assets/details/${encodeURIComponent(serialNumber)}`;
+  const path = `/assets/by-serial/${encodeURIComponent(serialNumber)}`;
   try {
     const { data } = await apiClient.get<Asset>(path);
     return data;
@@ -84,7 +86,7 @@ export async function updateAsset(
   serialNumber: string,
   payload: AssetFormValues
 ): Promise<Asset> {
-  const path = `/assets/update-by-serial/${encodeURIComponent(serialNumber)}`;
+  const path = `/assets/${encodeURIComponent(serialNumber)}`;
   const backendPayload = mapAssetFormValuesToBackendPayload(payload);
   try {
     const { data } = await apiClient.put<Asset>(path, backendPayload);
@@ -96,11 +98,11 @@ export async function updateAsset(
       const updated = updateMockAssetBySerialNumber(serialNumber, {
         mainSerialNumber: asset?.mainSerialNumber || '',
         serialNumber: asset?.serialNumber || serialNumber,
-        name: payload.name,
+        assetName: payload.assetName,
         // category: payload.category,
         location: payload.location,
         status: payload.status,
-        owner: asset?.owner || '',
+        ownerId: asset?.ownerId || '',
         acquiredDate: asset?.acquiredDate || '',
         // description: payload.description?.trim()
         //   ? payload.description
@@ -138,9 +140,9 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
       const fallbackData = createMockAsset({
         mainSerialNumber: payload.mainSerialNumber,
         serialNumber: payload.serialNumber,
-        name: payload.name,
+        assetName: payload.assetName,
         status: payload.status,
-        owner: payload.owner,
+        ownerId: payload.ownerId,
         location: payload.location,
         acquiredDate: payload.acquiredDate,
       });
@@ -152,4 +154,12 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
     }
     throw error;
   }
+}
+
+export async function getAssetsLogs(filters?: AssetFilters): Promise<GetAssetsLogsResponse> {
+  console.log('[API][ASSETS] getAssetsLogs called', { filters });
+    const { data } = await apiClient.get<GetAssetsLogsResponse>('/assets-logs', { params: filters });
+    console.log('[API][ASSETS] getAssetsLogs success', { count: data });
+    console.log('[API][ASSETS] getAssetsLogs success', { count: data.data.length });
+    return data;
 }

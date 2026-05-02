@@ -8,6 +8,7 @@ import {
   Plus,
   List,
   Wrench,
+  ClipboardCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,14 +29,14 @@ const navItems = [
     icon: Plus,
   },
   {
+    title: 'ประเมินสภาพ',
+    href: '/inspection',
+    icon: ClipboardCheck,
+  },
+  {
     title: 'รายการ',
     href: '/assets',
     icon: List,
-  },
-  {
-    title: 'แจ้งซ่อม',
-    href: '/repair',
-    icon: Wrench,
   },
 ];
 
@@ -47,8 +48,7 @@ export function MobileNav() {
       <div className="flex h-16 items-center justify-around px-2">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href ||
-            (item.href !== '/' && pathname.startsWith(item.href));
+            pathname === item.href;
 
           return (
             <Link

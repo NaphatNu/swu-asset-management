@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { repairFormSchema, type RepairFormValues } from '@/lib/validations';
 import { repairStatusLabels, statusLabels } from '@/constants/asset';
 import { getAssetBySerialNumber } from '@/lib/api';
+import { set } from 'date-fns';
 
 interface RepairFormProps {
   defaultSerialNumber?: string;
@@ -47,14 +48,14 @@ export function RepairForm({
     resolver: zodResolver(repairFormSchema),
     defaultValues: {
       serialNumber: defaultSerialNumber || '',
-      name: '',
       description: '',
-      repairStatus: 'internal-repair',
+      repairStatus: 'open',
+      type: 'internal-repair',
     },
   });
 
   const watchSerialNumber = watch('serialNumber');
-  const watchAssetName = watch('name');
+  const watchAssetName = watch('assetName');
 
   useEffect(() => {
     const fetchAsset = async () => {
@@ -62,14 +63,16 @@ export function RepairForm({
         setIsLoadingAsset(true);
         try {
           const assetData = await getAssetBySerialNumber(watchSerialNumber);
-          setValue('name', assetData?.name || '');
+          setValue('assetName', assetData?.assetName || '');
+          setValue('assetId', assetData?.id || '');
         } catch (error) {
-          setValue('name', '');
+          setValue('assetName', '');
+          setValue('assetId', '');
         } finally {
           setIsLoadingAsset(false);
         }
       } else {
-        setValue('name', '');
+        setValue('assetName', '');
       }
     };
 

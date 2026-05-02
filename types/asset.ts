@@ -2,41 +2,73 @@
 
 import { locationOptions } from "@/constants/asset";
 
-export type AssetStatus = 'available' | 'on-loan' | 'internal-repair' | 'external-repair' | 'pending-disposal' | 'missing' | 'disposed';
-export type RepairStatus = 'internal-repair' | 'external-repair' ;
+export type AssetStatus = 'available' | 'in-use' | 'under-repair' | 'lost' | 'pending-disposal' | 'disposed';
+export type AssetCondition = 'normal' | 'minor-damage' | 'major-damage' | 'critical';
+export type RepairStatus = 'open' | 'in-progress' | 'completed';
+export type RepairType = 'internal-repair' | 'external-repair' ;
 export type AssetCategory = 'computer' | 'furniture' | 'equipment' | 'vehicle' | 'other';
 export type RepairPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type Action = 'update-condition' | 'update-status' | 'update-repair' | 'move' ;
 export type LocationOption = typeof locationOptions[number];
 
 export interface Asset {
   id: string;
   mainSerialNumber: string;
   serialNumber: string;
-  name: string;
-  status: AssetStatus;
-  owner: string;
+  assetName: string;
   location: string;
+  status: AssetStatus;
+  condition: AssetCondition;
+  ownerId: string;
   acquiredDate: string;
-  // category: AssetCategory;
-  // description?: string;
-  // purchaseDate?: string;
-  // purchasePrice?: number;
-  // warrantyExpiry?: string;
-  // assignedTo?: string;
-  // imageUrl?: string;
-  // qrCode?: string;
-  createdAt: string;
+  updateByName: string;
   updatedAt: string;
+  createdByName: string;
+  createdAt: string;
+}
+
+export interface GetAssetsResponse {
+  data: Asset[];    // ตัวแปร data ข้างในนี้แหละที่เป็น Array
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AssetLog {
+  id: string;
+  assetId: string;
+  assetName: string;
+  assetSerialNumber: string;
+  action: Action;
+  note: string;
+  createdByName: string;
+  createdAt: string;
+}
+
+export interface GetAssetsLogsResponse {
+  data: AssetLog[];    // ตัวแปร data ข้างในนี้แหละที่เป็น Array
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface RepairRequest {
   id: string;
+  assetId: string;
   serialNumber: string;
-  name: string;
+  assetName: string;
   description: string;
-  requestDate: string;
-  reportedBy: string;
-  repairStatus: RepairStatus;
+  status: RepairStatus;
+  type: RepairType;
+  reportedByName: string;
+  createdAt: string;
+}
+
+export interface GetRepairResponse {
+  data: RepairRequest[];    // ตัวแปร data ข้างในนี้แหละที่เป็น Array
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface User {
@@ -51,11 +83,10 @@ export interface User {
 export interface DashboardStats {
   total: number;          // ครุภัณฑ์ทั้งหมด
   available: number;      // available: ใช้งานได้ตามปกติ
-  onLoan: number;         // on-loan: ยืมใช้ภายในหน่วยงาน
-  internalRepair: number; // internal-repair: ชำรุดระหว่างซ่อม (ภายใน)
-  externalRepair: number; // external-repair: ชำรุดระหว่างซ่อม (ภายนอก)
-  pendingDisposal: number;// pending-disposal: รอจำหน่าย
-  missing: number;        // missing: สูญหาย
+  inUse: number;         // inUse: ใช้งานอยู่ 
+  underRepair: number; // underRepair: ชำรุดระหว่างซ่อม
+  lost: number;        // lost: สูญหาย
+  pendingDispose: number;// pending-dispose: อยู่ระหว่างดำเนินการจำหน่าย
   disposed: number;       // disposed: จำหน่ายออก/ตัดจำหน่าย
 }
 
@@ -92,9 +123,35 @@ export interface RepairFormData {
 
 // Filter and pagination types
 export interface AssetFilters {
-  name?: string;
   status?: AssetStatus;
+  condition?: AssetCondition;
   location?: LocationOption;
+  assetName?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AssetLogFilters {
+  assetName?: string;
+  action?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface RepairFilters {
+  status?: RepairStatus;
+  type?: RepairType;
+  priority?: RepairPriority;
+  serialNumber?: string;
+  assetName?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface PaginationState {

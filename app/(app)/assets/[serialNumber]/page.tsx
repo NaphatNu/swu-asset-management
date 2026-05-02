@@ -26,8 +26,8 @@ function assetToFormValues(asset: Asset): AssetFormValues {
   return {
     mainSerialNumber: asset.mainSerialNumber,
     serialNumber: asset.serialNumber,
-    name: asset.name,
-    owner: asset.owner,
+    assetName: asset.assetName,
+    ownerId: asset.ownerId,
     acquiredDate: asset.acquiredDate,
     location: asset.location,
     status: asset.status,
@@ -176,7 +176,7 @@ export default function AssetDetailPage() {
               <CardContent className="space-y-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">ชื่อ</p>
-                  <p className="font-medium">{asset.name}</p>
+                  <p className="font-medium">{asset.assetName}</p>
                 </div>
                 {/* <div>
                   <p className="text-muted-foreground">ประเภท</p>

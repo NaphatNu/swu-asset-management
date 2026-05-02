@@ -161,7 +161,7 @@ function QRGeneratorContent() {
             {asset && (
               <div className="rounded-lg bg-muted p-3 space-y-1">
                 <p className="text-xs text-muted-foreground">พบครุภัณฑ์:</p>
-                <p className="text-sm font-medium">{asset.name}</p>
+                <p className="text-sm font-medium">{asset.assetName}</p>
                 <p className="text-xs text-muted-foreground">{asset.location}</p>
               </div>
             )}
