@@ -31,13 +31,14 @@ interface InspectionFormProps {
 
 export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: InspectionFormProps) {
     const [isLoadingAsset, setIsLoadingAsset] = useState(false);
+    const [isNotFound, setIsNotFound] = useState(false);
     const router = useRouter();
 
     const { register, handleSubmit, control, setValue, watch, reset, formState: { errors } } = useForm<InspectionFormValues>({
         resolver: zodResolver(inspectionFormSchema),
         defaultValues: {
             serialNumber: defaultSerialNumber || '',
-            condition: 'NORMAL',
+            condition: 'normal',
             updateStatus: false,
         },
     });
@@ -48,19 +49,47 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
     // Logic การดึงข้อมูล Asset เมื่อพิมพ์ Serial Number
     useEffect(() => {
         const fetchAsset = async () => {
-            if (watchSerialNumber && watchSerialNumber.length >= 5) {
-                setIsLoadingAsset(true);
-                try {
-                    const assetData = await getAssetBySerialNumber(watchSerialNumber);
-                    if (assetData) {
-                        setValue('assetId', (assetData.id).toString());
-                        setValue('assetName', assetData.assetName);
-                    }
-                } catch (error) {
+            // 1. ถ้ารหัสสั้นไป ให้ล้างค่าออกทันที
+            if (!watchSerialNumber || watchSerialNumber.length < 25) {
+                console.log('รหัสสั้นเกินไป, ล้างค่า Asset');
+                setValue('assetName', '');
+                setValue('assetId', '');
+                setIsNotFound(false);
+                return;
+            }
+
+            setIsLoadingAsset(true);
+            setIsNotFound(false);
+
+            // 2. ล้างค่าเดิมออกก่อน "ทันที" ที่เริ่มค้นหาครั้งใหม่
+            // เพื่อให้ช่องสีฟ้าหายไปขณะที่กำลังหมุน Loader
+            setValue('assetName', '');
+            setValue('assetId', '');
+
+            try {
+                const assetData = await getAssetBySerialNumber(watchSerialNumber);
+
+                if (assetData) {
+                    setValue('assetId', (assetData.id).toString());
+                    setValue('assetName', assetData.assetName);
+                    setIsNotFound(false);
+                } else {
+                    // 3. เพิ่ม else กรณี API ตอบกลับสำเร็จแต่ไม่มีข้อมูล (404/null)
                     setValue('assetName', '');
-                } finally {
-                    setIsLoadingAsset(false);
+                    setValue('assetId', '');
+                    setIsNotFound(true);
                 }
+            } catch (error) {
+                // กรณีเกิด Error (เช่น 401, 500)
+                setValue('assetName', '');
+                setValue('assetId', '');
+                console.error('Error fetching asset:', error);
+
+                if (error === 404) {
+                    setIsNotFound(true);
+                }
+            } finally {
+                setIsLoadingAsset(false);
             }
         };
         const timer = setTimeout(fetchAsset, 500);
@@ -110,9 +139,19 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
                     </div>
 
                     {watchAssetName && (
-                        <div className="rounded-lg border border-blue-500/20 bg-blue-50 p-3 animate-in fade-in slide-in-from-top-1">
-                            <p className="text-xs text-blue-700 font-semibold">ทรัพย์สินที่เลือก:</p>
-                            <p className="text-sm font-bold text-blue-900">{watchAssetName}</p>
+                        <div className="rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 space-y-1 animate-in fade-in zoom-in-95">
+                            <p className="text-xs text-emerald-700 font-semibold">พบครุภัณฑ์ในระบบ:</p>
+                            <p className="text-sm font-bold text-emerald-900">{watchAssetName}</p>
+                        </div>
+                    )}
+
+                    {isNotFound && !isLoadingAsset && !watchAssetName && (
+                        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 animate-in fade-in slide-in-from-top-1">
+                            <div className="flex items-center gap-2 text-destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <p className="text-sm font-bold">ไม่พบข้อมูลครุภัณฑ์นี้ในระบบ</p>
+                            </div>
+                            <p className="text-xs text-destructive/80 mt-1">กรุณาตรวจสอบรหัสครุภัณฑ์ใหม่อีกครั้ง</p>
                         </div>
                     )}
 
@@ -128,10 +167,10 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
                                         <SelectValue placeholder="เลือกสภาพ" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="NORMAL">ปกติ (NORMAL)</SelectItem>
-                                        <SelectItem value="MINOR_DAMAGE">ชำรุดเล็กน้อย (MINOR DAMAGE)</SelectItem>
-                                        <SelectItem value="MAJOR_DAMAGE">ชำรุดหนัก (MAJOR DAMAGE)</SelectItem>
-                                        <SelectItem value="CRITICAL">ขั้นวิกฤต (CRITICAL)</SelectItem>
+                                        <SelectItem value="normal">ปกติ (NORMAL)</SelectItem>
+                                        <SelectItem value="minor-damage">ชำรุดเล็กน้อย (MINOR DAMAGE)</SelectItem>
+                                        <SelectItem value="major-damage">ชำรุดหนัก (MAJOR DAMAGE)</SelectItem>
+                                        <SelectItem value="critical">ขั้นวิกฤต (CRITICAL)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             )}
@@ -155,7 +194,7 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
                         <div className="space-y-0.5">
                             <Label className="text-base">อัปเดตสถานะการใช้งาน</Label>
                             <p className="text-sm text-muted-foreground">
-                                เปลี่ยนสถานะทรัพย์สินอัตโนมัติ (เช่น เป็น 'ส่งซ่อม' หากชำรุดหนัก)
+                                เปลี่ยนสถานะครุภัณฑ์อัตโนมัติ (เช่น เป็น 'ส่งซ่อม' หากชำรุดหนัก)
                             </p>
                         </div>
                         <Controller

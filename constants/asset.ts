@@ -1,4 +1,4 @@
-import type { AssetCondition, AssetStatus, RepairStatus, RepairType } from '@/types/asset';
+import type { Action, AssetCondition, AssetStatus, RepairStatus, RepairType } from '@/types/asset';
 
 // Category labels for display
 export const categoryLabels: Record<string, string> = {
@@ -28,11 +28,10 @@ export const conditionLabels: Record<AssetCondition, string> = {
 };
 
 // Action labels for display
-export const actionLabels: Record<string, string> = {
+export const actionLabels: Record<Action, string> = {
   'update-condition': 'อัปเดตสภาพ',
-  'update-status': 'อัปเดตสถานะ',
-  'update-repair': 'อัปเดตการซ่อม',
-  move: 'ย้ายครุภัณฑ์',
+  'update-asset': 'อัปเดตครุภัณฑ์',
+  'create-repair': 'สร้างคำขอซ่อม',
 };
 
 // Repair status labels for display

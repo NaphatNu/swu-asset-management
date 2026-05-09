@@ -26,7 +26,7 @@ export const assetFormSchema = z.object({
   condition: z.enum(['normal', 'minor-damage', 'major-damage', 'critical'], {
     errorMap: () => ({ message: 'กรุณาเลือกสภาพ' }),
   }).optional(),
-  ownerId: z.string().optional(),
+  ownerName: z.string().optional(),
   acquiredDate: z.string().optional(),
 
   // description: z.string().max(500, 'คำอธิบายต้องไม่เกิน 500 ตัวอักษร').optional(),
@@ -48,7 +48,7 @@ export const inspectionFormSchema = z.object({
     .string()
     .min(1, 'กรุณากรอกรหัสครุภัณฑ์')
     .regex(/^\d{3}-\d{16}-\d{1}-\d{2}$/, 'รูปแบบรหัสครุภัณฑ์ไม่ถูกต้อง (เช่น 123-4567890123456789-4-56)'),
-  condition: z.enum(['NORMAL', 'MINOR_DAMAGE', 'MAJOR_DAMAGE', 'CRITICAL'], {
+  condition: z.enum(['normal', 'minor-damage', 'major-damage', 'critical'], {
     errorMap: () => ({ message: 'กรุณาเลือกสภาพ' }),
   }),
   note: z.string().max(1000, 'หมายเหตุต้องไม่เกิน 1000 ตัวอักษร').optional(),

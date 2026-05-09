@@ -27,7 +27,7 @@ function assetToFormValues(asset: Asset): AssetFormValues {
     mainSerialNumber: asset.mainSerialNumber,
     serialNumber: asset.serialNumber,
     assetName: asset.assetName,
-    ownerId: asset.ownerId,
+    ownerName: asset.ownerName,
     acquiredDate: asset.acquiredDate,
     location: asset.location,
     status: asset.status,

@@ -39,18 +39,6 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const roleLabels: Record<string, string> = {
-    admin: 'ผู้ดูแลระบบ',
-    staff: 'เจ้าหน้าที่',
-    viewer: 'ผู้ใช้ทั่วไป',
-  };
-
-  const roleLabel = useMemo(() => {
-    const firstRole = session?.roles?.[0];
-    if (!firstRole) return undefined;
-    return roleLabels[firstRole] ?? firstRole;
-  }, [session?.roles]);
-
   if (status === 'loading') {
     return (
       <div className="p-6 text-muted-foreground">กำลังโหลดข้อมูล...</div>
@@ -97,15 +85,6 @@ export default function ProfilePage() {
             </h2>
             {user?.email && (
               <p className="text-sm text-muted-foreground">{user.email}</p>
-            )}
-
-            {roleLabel && (
-              <div className="mt-4 flex items-center gap-2">
-                <Badge variant="secondary">
-                  <Shield className="mr-1 size-3" />
-                  {roleLabel}
-                </Badge>
-              </div>
             )}
 
             <Separator className="my-6" />

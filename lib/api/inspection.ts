@@ -7,7 +7,7 @@ import type { Asset,} from '@/types/asset';
 interface CreateInspectionBackendPayload {
   assetId: string;
   condition: string;
-  notes?: string;
+  note?: string;
   updateStatus: boolean;
 }
 
@@ -15,7 +15,7 @@ function mapInspectionFormValuesToBackendPayload(values: InspectionFormValues): 
   return {
     assetId: values.assetId,
     condition: values.condition,
-    notes: values.note,
+    note: values.note,
     updateStatus: values.updateStatus,
   };
 }

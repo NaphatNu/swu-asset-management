@@ -124,7 +124,7 @@ function AssetDetailContent({
           <DetailItem
             icon={User}
             label="ผู้รับผิดชอบ"
-            value={asset.ownerId || 'ไม่ได้ระบุ'}
+            value={asset.ownerName || 'ไม่ได้ระบุ'}
           />
           {/* <DetailItem
               icon={FileText}

@@ -8,7 +8,7 @@ export type RepairStatus = 'open' | 'in-progress' | 'completed';
 export type RepairType = 'internal-repair' | 'external-repair' ;
 export type AssetCategory = 'computer' | 'furniture' | 'equipment' | 'vehicle' | 'other';
 export type RepairPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type Action = 'update-condition' | 'update-status' | 'update-repair' | 'move' ;
+export type Action = 'update-condition' | 'update-asset' | 'create-repair' ;
 export type LocationOption = typeof locationOptions[number];
 
 export interface Asset {
@@ -19,7 +19,7 @@ export interface Asset {
   location: string;
   status: AssetStatus;
   condition: AssetCondition;
-  ownerId: string;
+  ownerName: string;
   acquiredDate: string;
   updateByName: string;
   updatedAt: string;

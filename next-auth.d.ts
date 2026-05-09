@@ -8,15 +8,17 @@ declare module 'next-auth' {
       image?: string | null;
     } & DefaultSession['user'];
     oid?: string;
-    roles?: string[];
+    accessToken?: string;
+    error?: string; // เพิ่มฟิลด์ error สำหรับแจ้งปัญหา Refresh Token
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     oid?: string;
-    roles?: string[];
     picture?: string;
+    accessToken?: string;
+    error?: string; // เพิ่มฟิลด์ error สำหรับแจ้งปัญหา Refresh Token
   }
 }
 

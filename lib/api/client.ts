@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
@@ -10,21 +11,17 @@ export const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.request.use((config) => {
-  console.log('[API][REQUEST]', {
-    method: config.method?.toUpperCase(),
-    url: `${config.baseURL || ''}${config.url || ''}`,
-    params: config.params,
-    data: config.data,
-  });
+apiClient.interceptors.request.use(async (config) => {
+  // ดึง session ออกมา (NextAuth จะไปอ่านจาก Cookie ให้เอง)
+  const session = await getSession();
 
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (session && session.accessToken) {
+    config.headers.Authorization = `Bearer ${session.accessToken}`;
   }
+
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
 apiClient.interceptors.response.use(
@@ -39,12 +36,15 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('[API][ERROR]', {
-      method: error.config?.method?.toUpperCase(),
-      url: `${error.config?.baseURL || ''}${error.config?.url || ''}`,
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message,
+      message: error.message
     });
+
+    // ถ้าเจอ 401 หรือ Refresh Error ให้สั่ง Logout หน้าบ้านด้วย
+    if (error.response?.status === 401) {
+      // window.location.href = '/login'; // หรือใช้ signOut() จาก next-auth/react
+    }
     return Promise.reject(error);
   }
 );

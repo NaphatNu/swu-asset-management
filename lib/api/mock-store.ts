@@ -27,7 +27,7 @@ export function updateMockAssetBySerialNumber(
     | 'serialNumber'
     | 'assetName'
     | 'status'
-    | 'ownerId'
+    | 'ownerName'
     | 'location'
     | 'acquiredDate'
   >
@@ -48,8 +48,8 @@ export function listMockAssets(filters?: AssetFilters): GetAssetsResponse {
   if (!filters) return { data: [...assetsStore], total: assetsStore.length, page: 1, pageSize: assetsStore.length };
 
   const filteredAssets = assetsStore.filter((asset) => {
-    if (filters.name) {
-      const query = filters.name.toLowerCase();
+    if (filters.assetName) {
+      const query = filters.assetName.toLowerCase();
       const matched =
         asset.serialNumber.toLowerCase().includes(query) ||
         asset.assetName.toLowerCase().includes(query);
@@ -70,7 +70,7 @@ export function createMockAsset(
     | 'serialNumber'
     | 'assetName'
     | 'status'
-    | 'ownerId'
+    | 'ownerName'
     | 'location'
     | 'acquiredDate'
   >

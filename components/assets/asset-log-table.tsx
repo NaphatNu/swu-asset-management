@@ -102,7 +102,6 @@ export function AssetLogTable({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onClick={() => onView?.(log)}><Eye className="mr-2 size-4" /> ดูรายละเอียด</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => onEdit?.(log)}><Edit className="mr-2 size-4" /> แก้ไข</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => onGenerateQR?.(log)}><QrCode className="mr-2 size-4" /> สร้าง QR Code</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem onClick={() => onRepair?.(log)} className="text-destructive focus:text-destructive">

@@ -70,7 +70,7 @@ export function AssetForm({
       location: '',
       status: 'available',
       condition: 'normal',
-      ownerId: '',
+      ownerName: '',
       acquiredDate: '',
       // category: undefined,
       // description: '',

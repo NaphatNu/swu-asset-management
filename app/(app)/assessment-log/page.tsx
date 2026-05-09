@@ -71,10 +71,6 @@ export default function AssetsPage() {
     setDrawerOpen(true);
   };
 
-  const handleEditAsset = (asset: AssetLog) => {
-    router.push(`/assets/${encodeURIComponent(asset.assetSerialNumber)}`);
-  };
-
   const handleGenerateQR = (asset: AssetLog) => {
     router.push(`/qr-generator?assetId=${asset.assetSerialNumber}`);
   };
@@ -160,7 +156,6 @@ export default function AssetsPage() {
           onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))}
           onPageSizeChange={(newSize) => setPagination(prev => ({ ...prev, pageSize: newSize, page: 1 }))}
           onView={handleViewAsset}
-          onEdit={handleEditAsset}
           onGenerateQR={handleGenerateQR}
           onRepair={handleRepair}
         />

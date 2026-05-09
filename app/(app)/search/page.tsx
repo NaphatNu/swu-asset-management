@@ -37,7 +37,7 @@ export default function SearchPage() {
     let cancelled = false;
     setIsSearching(true);
     const timer = window.setTimeout(() => {
-      getAssetsSearch({ name: trimmed })
+      getAssetsSearch({ assetName: trimmed })
         .then((data) => {
           if (!cancelled) setSearchResults(data.data);
         })

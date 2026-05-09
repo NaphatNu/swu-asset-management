@@ -16,7 +16,7 @@ interface CreateAssetBackendPayload {
   location: string;
   status: Asset['status'];
   condition: Asset['condition'];
-  ownerId: string;
+  ownerName: string;
   acquiredDate: string;
 }
 
@@ -28,7 +28,7 @@ function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAsse
     location: values.location,
     status: values.status,
     condition: values.condition ?? 'normal',
-    ownerId: values.ownerId ?? '',
+    ownerName: values.ownerName ?? '',
     acquiredDate: values.acquiredDate ?? '',
   };
 }
@@ -102,7 +102,7 @@ export async function updateAsset(
         // category: payload.category,
         location: payload.location,
         status: payload.status,
-        ownerId: asset?.ownerId || '',
+        ownerName: asset?.ownerName || '',
         acquiredDate: asset?.acquiredDate || '',
         // description: payload.description?.trim()
         //   ? payload.description
@@ -142,7 +142,7 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
         serialNumber: payload.serialNumber,
         assetName: payload.assetName,
         status: payload.status,
-        ownerId: payload.ownerId,
+        ownerName: payload.ownerName,
         location: payload.location,
         acquiredDate: payload.acquiredDate,
       });
@@ -158,7 +158,7 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
 
 export async function getAssetsLogs(filters?: AssetFilters): Promise<GetAssetsLogsResponse> {
   console.log('[API][ASSETS] getAssetsLogs called', { filters });
-    const { data } = await apiClient.get<GetAssetsLogsResponse>('/assets-logs', { params: filters });
+    const { data } = await apiClient.get<GetAssetsLogsResponse>('/asset-logs', { params: filters });
     console.log('[API][ASSETS] getAssetsLogs success', { count: data });
     console.log('[API][ASSETS] getAssetsLogs success', { count: data.data.length });
     return data;
