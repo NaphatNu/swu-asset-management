@@ -116,9 +116,9 @@ export function Header() {
             <DropdownMenuItem asChild>
               <Link href="/profile">โปรไฟล์</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href="/settings">ตั้งค่า</Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive"

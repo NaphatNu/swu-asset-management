@@ -71,13 +71,13 @@ export default function ProfilePage() {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <Button
+              {/* <Button
                 size="icon"
                 variant="secondary"
                 className="absolute -bottom-2 -right-2 size-8 rounded-full"
               >
                 <Camera className="size-4" />
-              </Button>
+              </Button> */}
             </div>
 
             <h2 className="mt-4 text-xl font-semibold">

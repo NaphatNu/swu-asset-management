@@ -109,8 +109,12 @@ export function AppSidebar() {
     <Sidebar variant="inset" className="border-r-0">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
-            <LayoutDashboard className="size-5" />
+          <div className="flex size-12 items-center justify-center overflow-hidden">
+            <img
+              src="/Logo_of_Srinakharinwirot_University.svg.png"
+              alt="Logo"
+              className="size-full object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-base font-semibold tracking-tight">

@@ -15,7 +15,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2023-06-15T10:00:00Z',
     createdByName: 'System Admin', // เพิ่มให้ตรง Interface
     updatedAt: '2024-01-15T14:30:00Z',
-    updateByName: 'อ.สมศักดิ์ รักเรียน', // เพิ่มให้ตรง Interface
+    updatedByName: 'อ.สมศักดิ์ รักเรียน', // เพิ่มให้ตรง Interface
   },
   {
     id: '2',
@@ -30,7 +30,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2024-01-10T09:00:00Z',
     createdByName: 'System Admin',
     updatedAt: '2024-01-20T11:00:00Z',
-    updateByName: 'System Admin',
+    updatedByName: 'System Admin',
   },
   {
     id: '3',
@@ -45,7 +45,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2022-03-20T08:00:00Z',
     createdByName: 'Admin 02',
     updatedAt: '2024-02-01T09:00:00Z',
-    updateByName: 'Admin 02',
+    updatedByName: 'Admin 02',
   },
   {
     id: '4',
@@ -60,7 +60,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2021-11-05T10:00:00Z',
     createdByName: 'System Admin',
     updatedAt: '2024-03-01T16:00:00Z',
-    updateByName: 'ช่างซ่อมบำรุง A',
+    updatedByName: 'ช่างซ่อมบำรุง A',
   },
   {
     id: '5',
@@ -75,7 +75,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2019-08-12T11:00:00Z',
     createdByName: 'Admin 01',
     updatedAt: '2024-02-28T10:00:00Z',
-    updateByName: 'Admin 01',
+    updatedByName: 'Admin 01',
   },
   {
     id: '6',
@@ -90,7 +90,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2023-02-28T13:00:00Z',
     createdByName: 'System Admin',
     updatedAt: '2024-01-05T08:00:00Z',
-    updateByName: 'System Admin',
+    updatedByName: 'System Admin',
   },
   {
     id: '7',
@@ -105,7 +105,7 @@ export const mockAssets: Asset[] = [
     createdAt: '2022-07-01T09:00:00Z',
     createdByName: 'Admin 04',
     updatedAt: '2024-03-10T14:00:00Z',
-    updateByName: 'Admin 04',
+    updatedByName: 'Admin 04',
   },
   {
     id: '8',
@@ -120,6 +120,6 @@ export const mockAssets: Asset[] = [
     createdAt: '2023-04-15T10:00:00Z',
     createdByName: 'System Admin',
     updatedAt: '2024-01-10T09:00:00Z',
-    updateByName: 'System Admin',
+    updatedByName: 'System Admin',
   },
 ];

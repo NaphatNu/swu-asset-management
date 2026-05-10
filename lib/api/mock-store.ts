@@ -82,7 +82,7 @@ export function createMockAsset(
     createdAt: now,
     updatedAt: now,
     condition: 'normal',
-    updateByName: 'mock-user',
+    updatedByName: 'mock-user',
     createdByName: 'mock-user',
   };
 
