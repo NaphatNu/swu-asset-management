@@ -1,19 +1,19 @@
 'use client';
 
-import { MapPin, Calendar, Tag } from 'lucide-react';
+import { MapPin, Calendar, Tag, UserCircle, CalendarDays, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { StatusBadge } from './status-badge';
+import { ActionBadge, StatusBadge } from './status-badge';
 import { categoryLabels } from '@/constants/asset';
 import type { Asset, AssetLog } from '@/types/asset';
 import { cn } from '@/lib/utils';
 
 interface AssetCardProps {
-  asset: AssetLog;
+  assetLog: AssetLog;
   onClick?: () => void;
   className?: string;
 }
 
-export function AssetCardLog({ asset, onClick, className }: AssetCardProps) {
+export function AssetCardLog({ assetLog, onClick, className }: AssetCardProps) {
   return (
     <Card
       className={cn(
@@ -22,32 +22,28 @@ export function AssetCardLog({ asset, onClick, className }: AssetCardProps) {
       )}
       onClick={onClick}
     >
-      <CardContent className="p-4">
+ <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-muted-foreground">
-                {asset.assetSerialNumber}
+                {assetLog.serialNumber}
               </span>
-              {/* <StatusBadge status={asset.status} /> */}
+              <ActionBadge action={assetLog.action} />
             </div>
             <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-              {asset.assetName}
+              {assetLog.assetName}
             </h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {/* <div className="flex items-center gap-1">
-                <Tag className="size-3" />
-                <span>{categoryLabels[asset.category]}</span>
-              </div> */}
               <div className="flex items-center gap-1">
-                <MapPin className="size-3" />
-                <span className="truncate max-w-[150px]">{asset.action}</span>
+                <User className="size-3" />
+                <span className="truncate max-w-[150px]">{assetLog.createdByName}</span>
               </div>
-              {asset.createdAt && (
+              {assetLog.createdAt && (
                 <div className="flex items-center gap-1">
-                  <Calendar className="size-3" />
+                  <CalendarDays className="size-3" />
                   <span>
-                    {new Date(asset.createdAt).toLocaleDateString('th-TH', {
+                    {new Date(assetLog.createdAt).toLocaleDateString('th-TH', {
                       year: 'numeric',
                       month: 'short',
                     })}

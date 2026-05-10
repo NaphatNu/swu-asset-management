@@ -5,10 +5,7 @@ import { th } from 'date-fns/locale';
 import {
   MapPin,
   Calendar,
-  Tag,
   User,
-  FileText,
-  DollarSign,
   Shield,
   Edit,
   QrCode,
@@ -35,7 +32,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from './status-badge';
-import { categoryLabels, conditionLabels } from '@/constants/asset';
+import { conditionLabels } from '@/constants/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { Asset } from '@/types/asset';
 
@@ -94,12 +91,9 @@ function AssetDetailContent({
               <span className="font-mono text-sm font-semibold">
                 S/N: {asset.serialNumber}
               </span>
-
-
             </div>
             <StatusBadge status={asset.status} />
           </div>
-          {/* แสดง Serial Number ในส่วนหัวเพื่อให้เห็นชัดเจน */}
           <div className="flex items-center gap-2">
             <Hash className="size-3.5 text-muted-foreground" />
             <span className="font-mono text-xs text-muted-foreground">
@@ -111,11 +105,6 @@ function AssetDetailContent({
         <Separator />
 
         <div className="space-y-1">
-          {/* <DetailItem
-            icon={Tag}
-            label="ประเภท"
-            value={categoryLabels[asset.category]}
-          /> */}
           <DetailItem
             icon={MapPin}
             label="สถานที่"
@@ -126,11 +115,6 @@ function AssetDetailContent({
             label="ผู้รับผิดชอบ"
             value={asset.ownerName || 'ไม่ได้ระบุ'}
           />
-          {/* <DetailItem
-              icon={FileText}
-              label="รายละเอียด"
-              value={asset.Description}
-            /> */}
           <DetailItem
             icon={Shield}
             label="สภาพปัจจุบัน"
@@ -147,37 +131,12 @@ function AssetDetailContent({
             value={
               asset.acquiredDate
                 ? format(new Date(asset.acquiredDate), 'd MMMM yyyy', {
-                  locale: th,
-                })
+                    locale: th,
+                  })
                 : undefined
             }
           />
-          {/* <DetailItem
-            icon={DollarSign}
-            label="ราคา"
-            value={
-              asset.purchasePrice
-                ? `${asset.purchasePrice.toLocaleString()} บาท`
-                : undefined
-            }
-          /> */}
-          {/* <DetailItem
-            icon={Shield}
-            label="หมดประกัน"
-            value={
-              asset.warrantyExpiry
-                ? format(new Date(asset.warrantyExpiry), 'd MMMM yyyy', {
-                  locale: th,
-                })
-                : undefined
-            }
-          /> */}
         </div>
-
-        {/* เพิ่มส่วนบันทึกเวลาการแก้ไขล่าสุด (Optional) */}
-        {/* <p className="text-[10px] text-center text-muted-foreground pt-2">
-          อัปเดตล่าสุดเมื่อ: {format(new Date(asset.updatedAt), 'd MMM yy HH:mm', { locale: th })}
-        </p> */}
       </div>
 
       <div className="flex flex-wrap gap-2 px-4 pt-4">
@@ -257,7 +216,7 @@ export function AssetDetailDrawer({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0"> {/* p-0 เพื่อให้จัดการ padding ภายในเองได้สวยเหมือนเดิม */}
+      <DialogContent className="max-w-lg p-0">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-semibold leading-tight">
             {asset.assetName}
@@ -267,7 +226,6 @@ export function AssetDetailDrawer({
           </DialogDescription>
         </DialogHeader>
 
-        {/* ใช้ ScrollArea หรือ div จัดการเนื้อหา */}
         <div className="max-h-[70vh] overflow-y-auto py-2">
           <AssetDetailContent
             asset={asset}

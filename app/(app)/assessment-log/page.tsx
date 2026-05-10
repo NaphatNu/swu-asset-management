@@ -20,6 +20,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { AssetLogTable } from '@/components/assets/asset-log-table';
 import { AssetCardLog } from '@/components/assets/asset-card-log';
 import { AssetLogFilters } from '@/components/assets/asset-log-filters';
+import { AssetLogDetailDrawer } from '@/components/assets/asset-log-detail-drawer';
 
 export default function AssetsPage() {
   const router = useRouter();
@@ -72,11 +73,11 @@ export default function AssetsPage() {
   };
 
   const handleGenerateQR = (asset: AssetLog) => {
-    router.push(`/qr-generator?assetId=${asset.assetSerialNumber}`);
+    router.push(`/qr-generator?assetId=${asset.serialNumber}`);
   };
 
   const handleRepair = (asset: AssetLog) => {
-    router.push(`/repair?serialNumber=${asset.assetSerialNumber}`);
+    router.push(`/repair?serialNumber=${asset.serialNumber}`);
   };
 
   return (
@@ -118,7 +119,7 @@ export default function AssetsPage() {
           {assets.map((asset) => (
             <AssetCardLog
               key={asset.id}
-              asset={asset}
+              assetLog={asset}
               onClick={() => handleViewAsset(asset)}
             />
           ))}
@@ -136,7 +137,7 @@ export default function AssetsPage() {
           {assets.map((asset) => (
             <AssetCardLog
               key={asset.id}
-              asset={asset}
+              assetLog={asset}
               onClick={() => handleViewAsset(asset)}
             />
           ))}
@@ -161,14 +162,13 @@ export default function AssetsPage() {
         />
       )}
 
-      {/* <AssetDetailDrawer
-        asset={selectedAsset}
+        <AssetLogDetailDrawer
+        log={selectedAsset}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        onEdit={handleEditAsset}
         onGenerateQR={handleGenerateQR}
         onRepair={handleRepair}
-      /> */}
+      />
     </div>
   );
 }

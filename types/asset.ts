@@ -21,7 +21,7 @@ export interface Asset {
   condition: AssetCondition;
   ownerName: string;
   acquiredDate: string;
-  updateByName: string;
+  updatedByName: string;
   updatedAt: string;
   createdByName: string;
   createdAt: string;
@@ -38,7 +38,7 @@ export interface AssetLog {
   id: string;
   assetId: string;
   assetName: string;
-  assetSerialNumber: string;
+  serialNumber: string;
   action: Action;
   note: string;
   createdByName: string;

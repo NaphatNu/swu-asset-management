@@ -84,12 +84,10 @@ export function AssetLogTable({
                                 onClick={() => onView?.(log)}
                             >
                                 <TableCell className="font-medium">{log.assetName}</TableCell>
-                                <TableCell className="hidden md:table-cell font-mono text-xs">{log.assetSerialNumber}</TableCell>
+                                <TableCell className="hidden md:table-cell font-mono text-xs">{log.serialNumber}</TableCell>
                                 <TableCell className="font-medium"><ActionBadge action={log.action} /></TableCell>
                                 <TableCell className="font-medium">{log.note}</TableCell>
                                 <TableCell className="font-medium">{log.createdByName}</TableCell>
-                                {/* <TableCell><StatusBadge status={log.status} /></TableCell>
-                                <TableCell><ConditionBadge condition={log.condition} /></TableCell> */}
                                 <TableCell className="hidden md:table-cell text-sm">
                                     {log.createdAt ? new Date(log.createdAt).toLocaleDateString('th-TH') : '-'}
                                 </TableCell>
