@@ -6,7 +6,7 @@ export const mockDashboardStats: DashboardStats = {
   inUse: 20,
   underRepair: 10,
   lost: 7,
-  pendingDispose: 8,
+  pendingDisposal: 8,
   disposed: 8,
 };
 

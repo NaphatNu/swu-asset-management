@@ -69,7 +69,7 @@ export function AssetLogTable({
                         <TableHead>รายการครุภัณฑ์</TableHead>
                         <TableHead className="hidden md:table-cell">หมายเลขเดิม</TableHead>
                         <TableHead>การดำเนินการ</TableHead>
-                        <TableHead>รายละเอียด</TableHead>
+                        <TableHead className="max-w-[300px]">รายละเอียด</TableHead>
                         <TableHead className="hidden md:table-cell">ผู้ทำรายการ</TableHead>
                         <TableHead className="hidden md:table-cell">วันที่ทำรายการ</TableHead>
                         <TableHead className="w-[70px]"></TableHead>
@@ -86,7 +86,7 @@ export function AssetLogTable({
                                 <TableCell className="font-medium">{log.assetName}</TableCell>
                                 <TableCell className="hidden md:table-cell font-mono text-xs">{log.serialNumber}</TableCell>
                                 <TableCell className="font-medium"><ActionBadge action={log.action} /></TableCell>
-                                <TableCell className="font-medium">{log.note}</TableCell>
+                                <TableCell className="font-medium max-w-[300px] truncate">{log.note}</TableCell>
                                 <TableCell className="font-medium">{log.createdByName}</TableCell>
                                 <TableCell className="hidden md:table-cell text-sm">
                                     {log.createdAt ? new Date(log.createdAt).toLocaleDateString('th-TH') : '-'}

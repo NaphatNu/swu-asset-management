@@ -28,7 +28,7 @@ export function StatusPieChart() {
     { name: 'พร้อมใช้งาน', value: dashboardStats.available, color: '#10b981' },
     { name: 'ยืมใช้ภายใน', value: dashboardStats.inUse, color: '#3b82f6' },
     { name: 'ซ่อม (ภายใน)', value: dashboardStats.underRepair, color: '#f59e0b' },
-    { name: 'รอจำหน่าย', value: dashboardStats.pendingDispose, color: '#ef4444' },
+    { name: 'รอจำหน่าย', value: dashboardStats.pendingDisposal, color: '#ef4444' },
     { name: 'สูญหาย', value: dashboardStats.lost, color: '#64748b' },
     { name: 'จำหน่ายแล้ว', value: dashboardStats.disposed, color: '#1e293b' },
   ].filter(item => item.value > 0) : [];

@@ -92,7 +92,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="อยู่ระหว่างดำเนินการจำหน่าย"
-          value={stats.pendingDispose}
+          value={stats.pendingDisposal}
           icon={AlertTriangle}
           variant="destructive"
         />

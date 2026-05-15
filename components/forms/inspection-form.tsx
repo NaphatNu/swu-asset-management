@@ -46,10 +46,8 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
     const watchSerialNumber = watch('serialNumber');
     const watchAssetName = watch('assetName');
 
-    // Logic การดึงข้อมูล Asset เมื่อพิมพ์ Serial Number
     useEffect(() => {
         const fetchAsset = async () => {
-            // 1. ถ้ารหัสสั้นไป ให้ล้างค่าออกทันที
             if (!watchSerialNumber || watchSerialNumber.length < 25) {
                 console.log('รหัสสั้นเกินไป, ล้างค่า Asset');
                 setValue('assetName', '');
@@ -61,8 +59,6 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
             setIsLoadingAsset(true);
             setIsNotFound(false);
 
-            // 2. ล้างค่าเดิมออกก่อน "ทันที" ที่เริ่มค้นหาครั้งใหม่
-            // เพื่อให้ช่องสีฟ้าหายไปขณะที่กำลังหมุน Loader
             setValue('assetName', '');
             setValue('assetId', '');
 
@@ -74,13 +70,11 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
                     setValue('assetName', assetData.assetName);
                     setIsNotFound(false);
                 } else {
-                    // 3. เพิ่ม else กรณี API ตอบกลับสำเร็จแต่ไม่มีข้อมูล (404/null)
                     setValue('assetName', '');
                     setValue('assetId', '');
                     setIsNotFound(true);
                 }
             } catch (error) {
-                // กรณีเกิด Error (เช่น 401, 500)
                 setValue('assetName', '');
                 setValue('assetId', '');
                 console.error('Error fetching asset:', error);

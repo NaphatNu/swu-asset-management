@@ -86,7 +86,7 @@ export interface DashboardStats {
   inUse: number;         // inUse: ใช้งานอยู่ 
   underRepair: number; // underRepair: ชำรุดระหว่างซ่อม
   lost: number;        // lost: สูญหาย
-  pendingDispose: number;// pending-dispose: อยู่ระหว่างดำเนินการจำหน่าย
+  pendingDisposal: number;// pending-dispose: อยู่ระหว่างดำเนินการจำหน่าย
   disposed: number;       // disposed: จำหน่ายออก/ตัดจำหน่าย
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 import { repairFormSchema, type RepairFormValues } from '@/lib/validations';
-import { repairStatusLabels, statusLabels } from '@/constants/asset';
+import { repairStatusLabels } from '@/constants/asset';
 import { getAssetBySerialNumber } from '@/lib/api';
-import { set } from 'date-fns';
 
 interface RepairFormProps {
   defaultSerialNumber?: string;
@@ -35,6 +34,8 @@ export function RepairForm({
   isSubmitting,
 }: RepairFormProps) {
   const [isLoadingAsset, setIsLoadingAsset] = useState(false);
+  const [isNotFound, setIsNotFound] = useState(false);
+
 
   const {
     register,
@@ -59,25 +60,46 @@ export function RepairForm({
 
   useEffect(() => {
     const fetchAsset = async () => {
-      if (watchSerialNumber && watchSerialNumber.length >= 5) {
-        setIsLoadingAsset(true);
-        try {
-          const assetData = await getAssetBySerialNumber(watchSerialNumber);
-          setValue('assetName', assetData?.assetName || '');
-          setValue('assetId', assetData?.id || '');
-        } catch (error) {
+      if (!watchSerialNumber || watchSerialNumber.length < 25) {
+        console.log('รหัสสั้นเกินไป, ล้างค่า Asset');
+        setValue('assetName', '');
+        setValue('assetId', '');
+        setIsNotFound(false);
+        return;
+      }
+
+      setIsLoadingAsset(true);
+      setIsNotFound(false);
+
+      setValue('assetName', '');
+      setValue('assetId', '');
+
+      try {
+        const assetData = await getAssetBySerialNumber(watchSerialNumber);
+
+        if (assetData) {
+          setValue('assetId', (assetData.id).toString());
+          setValue('assetName', assetData.assetName);
+          setIsNotFound(false);
+        } else {
           setValue('assetName', '');
           setValue('assetId', '');
-        } finally {
-          setIsLoadingAsset(false);
+          setIsNotFound(true);
         }
-      } else {
+      } catch (error) {
         setValue('assetName', '');
+        setValue('assetId', '');
+        console.error('Error fetching asset:', error);
+
+        if (error === 404) {
+          setIsNotFound(true);
+        }
+      } finally {
+        setIsLoadingAsset(false);
       }
     };
-
-    const timeoutId = setTimeout(fetchAsset, 500);
-    return () => clearTimeout(timeoutId);
+    const timer = setTimeout(fetchAsset, 500);
+    return () => clearTimeout(timer);
   }, [watchSerialNumber, setValue]);
 
   return (
@@ -87,7 +109,7 @@ export function RepairForm({
           <CardTitle className="text-lg">ข้อมูลการแจ้งซ่อม</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          
+
           {/* Field: รหัสครุภัณฑ์ */}
           <div className="space-y-2">
             <Label htmlFor="serialNumber">รหัสครุภัณฑ์ *</Label>
@@ -115,6 +137,16 @@ export function RepairForm({
               <p className="text-sm font-bold text-emerald-900">{watchAssetName}</p>
             </div>
           )}
+
+          {isNotFound && !isLoadingAsset && !watchAssetName && (
+                        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 animate-in fade-in slide-in-from-top-1">
+                            <div className="flex items-center gap-2 text-destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <p className="text-sm font-bold">ไม่พบข้อมูลครุภัณฑ์นี้ในระบบ</p>
+                            </div>
+                            <p className="text-xs text-destructive/80 mt-1">กรุณาตรวจสอบรหัสครุภัณฑ์ใหม่อีกครั้ง</p>
+                        </div>
+                    )}
 
           {/* Field: สถานะ (ต้องใช้ Controller เพราะ Select ไม่ใช่ Native Input) */}
           <div className="space-y-2">

@@ -90,7 +90,7 @@ export function createMockAsset(
   dashboardStatsStore.total += 1;
   if (newAsset.status === 'available') dashboardStatsStore.available += 1;
   if (newAsset.status === 'under-repair') dashboardStatsStore.underRepair += 1;
-  if (newAsset.status === 'pending-disposal') dashboardStatsStore.pendingDispose += 1;
+  if (newAsset.status === 'pending-disposal') dashboardStatsStore.pendingDisposal += 1;
 
   return newAsset;
 }
