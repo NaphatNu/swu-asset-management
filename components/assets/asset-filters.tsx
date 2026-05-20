@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, X, Filter } from 'lucide-react';
+import * as React from 'react';
+import { Search, X, Filter, ChevronsUpDown, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,20 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import {
   statusLabels,
   locationOptions,
@@ -39,6 +54,7 @@ interface AssetFiltersProps {
 
 export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
   const isMobile = useIsMobile();
+  const [openLocation, setOpenLocation] = React.useState(false);
 
   const activeFiltersCount = [
     filters.assetName,
@@ -66,6 +82,80 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
     />
   );
 
+  // แยกส่วน Combobox สถานที่ออกมาเพื่อให้เรียกใช้ซ้ำได้ทั้ง Desktop และ Mobile
+  const LocationSearchSelect = ({ className }: { className?: string }) => (
+    <Popover open={openLocation} onOpenChange={setOpenLocation}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={openLocation}
+          className={cn(
+            "justify-between font-normal",
+            !filters.location && "text-muted-foreground",
+            className
+          )}
+        >
+          <span className="truncate">
+            {filters.location
+              ? locationOptions.find((loc) => loc === filters.location)
+              : "ทุกสถานที่"}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className={cn("p-0", isMobile ? "w-[calc(100vw-32px)]" : "w-[200px]")}>
+        <Command>
+          <CommandInput placeholder="พิมพ์เพื่อค้นหาเลขห้อง..." />
+          <CommandList>
+            <CommandEmpty>ไม่พบสถานที่นี้</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                value="all-locations" // ใช้ string ภาษาอังกฤษเพื่อไม่ให้โดนซ่อนเวลาผู้ใช้พิมพ์ค้นหาตัวอักษรไทย
+                onSelect={() => {
+                  onFiltersChange({
+                    ...filters,
+                    location: undefined,
+                  });
+                  setOpenLocation(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    !filters.location ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                ทุกสถานที่
+              </CommandItem>
+              {locationOptions.map((loc) => (
+                <CommandItem
+                  key={loc}
+                  value={loc}
+                  onSelect={() => {
+                    onFiltersChange({
+                      ...filters,
+                      location: loc as LocationOption,
+                    });
+                    setOpenLocation(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      filters.location === loc ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {loc}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+
   const FilterContent = () => (
     <div className="space-y-4">
       <div className="space-y-2 px-4">
@@ -73,29 +163,9 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
         {fiscalYearSelect}
       </div>
 
-      <div className="space-y-2 px-4">
+      <div className="space-y-2 px-4 flex flex-col">
         <label className="text-sm font-medium">สถานที่ตั้ง</label>
-        <Select
-          value={filters.location || 'all'}
-          onValueChange={(value) =>
-            onFiltersChange({
-              ...filters,
-              location: value === 'all' ? undefined : (value as LocationOption),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="ทั้งหมด" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">ทั้งหมด</SelectItem>
-            {locationOptions.map((loc) => (
-              <SelectItem key={loc} value={loc}>
-                {loc}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <LocationSearchSelect className="w-full" />
       </div>
 
       <div className="space-y-2 px-4">
@@ -209,27 +279,9 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
       ) : (
         <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
           {fiscalYearSelect}
-          <Select
-            value={filters.location || 'all'}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                location: value === 'all' ? undefined : (value as LocationOption),
-              })
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="สถานที่ตั้ง" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทุกสถานที่</SelectItem>
-              {locationOptions.map((loc) => (
-                <SelectItem key={loc} value={loc}>
-                  {loc}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          
+          {/* แทนที่ Select สถานที่เดิมด้วยคอมโพเนนต์ค้นหาตัวใหม่ */}
+          <LocationSearchSelect className="w-[160px]" />
 
           <Select
             value={filters.status || 'all'}

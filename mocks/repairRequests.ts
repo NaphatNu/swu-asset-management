@@ -6,7 +6,7 @@ export const mockRepairRequests: RepairRequest[] = [
             serialNumber: "207-3000000378680000-2-64",
             assetName: "Dell Monitor 01",
             description: "หน้าจอเปิดไม่ติด",
-            status: "in_progress",
+            status: "open",
             type: "internal-repair",
             reportedByName: "John Doe",
             createdAt: "2024-03-20T10:00:00Z"
@@ -17,7 +17,7 @@ export const mockRepairRequests: RepairRequest[] = [
             serialNumber: "207-3000000378680000-2-64",
             assetName: "Dell Monitor 02",
             description: "หน้าจอเปิดไม่ติด",
-            status: "pending",
+            status: "in-progress",
             type: "internal-repair",
             reportedByName: "John Doe",
             createdAt: "2024-03-20T10:00:00Z"

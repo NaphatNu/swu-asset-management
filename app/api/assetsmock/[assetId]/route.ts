@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     assetName: data.assetName,
     status: data.status,
     ownerName: data.ownerName ?? '',
-    location: data.location,
+    location: data.location ?? '',
     acquiredDate: data.acquiredDate ?? '',
     // description: data.description?.trim() ? data.description : undefined,
     // purchaseDate: data.purchaseDate?.trim() ? data.purchaseDate : undefined,
