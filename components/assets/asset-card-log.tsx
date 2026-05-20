@@ -2,7 +2,7 @@
 
 import { MapPin, Calendar, Tag, UserCircle, CalendarDays, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ActionBadge, StatusBadge } from './status-badge';
+import { ActionBadge, StatusBadge } from '../badge/status-badge';
 import { categoryLabels } from '@/constants/asset';
 import type { Asset, AssetLog } from '@/types/asset';
 import { cn } from '@/lib/utils';

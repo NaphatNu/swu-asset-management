@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ActionBadge } from './status-badge';
+import { ActionBadge } from '../badge/status-badge';
 import { conditionLabels } from '@/constants/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { AssetLog } from '@/types/asset';

@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
-import { listMockRepairs, createMockRepair } from '@/lib/api/mock-store';
-import type { GetRepairResponse, RepairPriority, RepairRequest } from '@/types/asset';
-
+import {
+  listMockRepairs,
+  createMockRepair,
+  deleteMockRepair,
+  updateMockRepairStatus,
+} from '@/mocks/mock-store';
+import type { GetRepairResponse, RepairRequest, RepairStatus } from '@/types/asset';
 
 export interface CreateRepairPayload {
   assetId: string;
@@ -11,16 +15,23 @@ export interface CreateRepairPayload {
   type?: RepairRequest['type'];
 }
 
-export async function getRepairRequests(filters: any): Promise<GetRepairResponse> {
+export interface RepairListFilters {
+  search?: string;
+  status?: RepairStatus;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function getRepairRequests(filters?: RepairListFilters): Promise<GetRepairResponse> {
   console.log('[API][REPAIRS] getRepairRequests called');
   try {
     const { data } = await apiClient.get<GetRepairResponse>('/repairs', { params: filters });
     console.log('[API][REPAIRS] getRepairRequests success', { count: data.data.length });
-    return data;
+    return data; // ส่งต่อ data ที่ได้จากหลังบ้านได้ทันที ไม่ต้อง map ข้อมูลแล้ว
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][REPAIRS] getRepairRequests fallback to mock data');
-      const fallbackData = listMockRepairs();
+      const fallbackData = listMockRepairs(filters);
       console.log('[API][REPAIRS] mock repairs result', { count: fallbackData.data.length });
       return fallbackData;
     }
@@ -33,7 +44,7 @@ export async function createRepairRequest(payload: CreateRepairPayload): Promise
   const backendPayload = {
     assetId: payload.assetId,
     description: payload.description,
-    status: payload.status || 'open',
+    status: payload.status || 'pending', // ใช้ค่าตรง ๆ ได้เลย ถ้าไม่มีให้เป็น 'pending'
     type: payload.type || 'internal-repair',
   };
   try {
@@ -42,7 +53,7 @@ export async function createRepairRequest(payload: CreateRepairPayload): Promise
       id: data.id,
       assetId: data.assetId,
     });
-    return data;
+    return data; // ส่งคืน data ตรง ๆ ไม่ต้องผ่านฟังก์ชันแปลงสถานะ
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][REPAIRS] createRepairRequest fallback to mock data');
@@ -52,6 +63,46 @@ export async function createRepairRequest(payload: CreateRepairPayload): Promise
         assetId: fallbackData.assetId,
       });
       return fallbackData;
+    }
+    throw error;
+  }
+}
+
+export async function deleteRepairRequest(id: string): Promise<void> {
+  const path = `/repairs/${encodeURIComponent(id)}`;
+  try {
+    await apiClient.delete(path);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.warn('[API][REPAIRS] deleteRepairRequest fallback to mock');
+      const deleted = deleteMockRepair(id);
+      if (!deleted) {
+        throw new Error('Repair request not found');
+      }
+      return;
+    }
+    throw error;
+  }
+}
+
+export async function updateRepairStatus(
+  id: string,
+  status: RepairStatus
+): Promise<RepairRequest> {
+  const path = `/repairs/${encodeURIComponent(id)}/status`;
+  try {
+    const { data } = await apiClient.patch<RepairRequest>(path, {
+      status, // ส่งค่า status ที่รับมาจากหน้าบ้านไปให้หลังบ้านได้โดยตรง
+    });
+    return data; // ส่งคืน data ตรง ๆ ไม่ต้องผ่านฟังก์ชันแปลงสถานะ
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.warn('[API][REPAIRS] updateRepairStatus fallback to mock');
+      const updated = updateMockRepairStatus(id, status);
+      if (!updated) {
+        throw new Error('Repair request not found');
+      }
+      return updated;
     }
     throw error;
   }

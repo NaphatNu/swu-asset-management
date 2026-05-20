@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getAssetBySerialNumber, updateAsset } from '@/lib/api';
 import type { Asset } from '@/types/asset';
 import type { AssetFormValues } from '@/lib/validations';
-import { ConditionBadge, StatusBadge } from '@/components/assets/status-badge';
+import { ConditionBadge, StatusBadge } from '@/components/badge/status-badge';
 
 /**
  * Helper สำหรับ Format วันที่และเวลาภาษาไทย
@@ -57,6 +57,9 @@ function assetToFormValues(asset: Asset): AssetFormValues {
     location: asset.location,
     status: asset.status,
     condition: asset.condition,
+    fiscalYear: asset.fiscalYear ?? '',
+    mainSequenceNo: asset.mainSequenceNo ?? '',
+    subItems: asset.subItems ?? [],
   };
 }
 
@@ -147,6 +150,8 @@ export default function AssetDetailPage() {
                 <DetailRow label="ชื่อครุภัณฑ์" value={asset.assetName} bold />
                 <DetailRow label="รหัสครุภัณฑ์ (SN)" value={asset.serialNumber} mono />
                 <DetailRow label="รหัสหลัก (Main SN)" value={asset.mainSerialNumber} mono />
+                <DetailRow label="ปีงบประมาณ" value={asset.fiscalYear ? `25${asset.fiscalYear}` : '—'} />
+                <DetailRow label="ลำดับชุดหลัก (Main Seq)" value={asset.mainSequenceNo} mono />
                 <DetailRow label="สถานะ" value={<StatusBadge status={asset.status} />} />
                 <DetailRow 
                   label="สภาพเครื่อง" 
@@ -168,7 +173,36 @@ export default function AssetDetailPage() {
               </CardContent>
             </Card>
 
-            {/* 3. ประวัติการบันทึก (Audit Trail) */}
+            {/* 3. รายการชิ้นส่วนย่อย (Sub Items) - แสดงเฉพาะเมื่อมีของในลิสต์ */}
+            {asset.subItems && asset.subItems.length > 0 && (
+              <Card className="md:col-span-2 shadow-sm border-l-4 border-l-purple-500">
+                <CardHeader className="flex flex-row items-center space-x-2 pb-2">
+                  <Package className="size-4 text-purple-500" />
+                  <CardTitle className="text-base font-bold">
+                    รายการชิ้นส่วนย่อยในชุด ({asset.subItems.length} รายการ)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    {asset.subItems.map((item, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/60 text-sm hover:bg-muted/70 transition-colors"
+                      >
+                        <span className="text-xs text-muted-foreground font-medium bg-background px-2 py-0.5 rounded border">
+                          ลำดับที่ {item.itemSequenceNo}
+                        </span>
+                        <span className="font-semibold text-foreground text-right">
+                          {item.itemSequenceName || '—'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 4. ประวัติการบันทึก (Audit Trail) */}
             <Card className="md:col-span-2 border-dashed bg-muted/20 shadow-none">
               <CardHeader className="flex flex-row items-center space-x-2 pb-2">
                 <History className="size-4 text-muted-foreground" />

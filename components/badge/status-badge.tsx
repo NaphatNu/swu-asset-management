@@ -80,9 +80,9 @@ interface RepairStatusBadgeProps {
 }
 
 const repairStatusStyles: Record<RepairStatus, string> = {
-  'open': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20',
-  'in-progress': 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20',
-  'completed': 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20',
+  open: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20',
+  "in-progress": 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20',
+  completed: 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20',
 };
 
 export function RepairStatusBadge({ status, className }: RepairStatusBadgeProps) {
@@ -126,6 +126,9 @@ const actionStyles: Record<Action, string> = {
   'update-condition': 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20',
   'update-asset': 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20',
   'create-repair': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20',
+  'delete-asset': 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20',
+  'delete-repair': 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20',
+  'update-status-repair': 'bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20',
 };
 
 export function ActionBadge({ action, className }: ActionBadgeProps) {

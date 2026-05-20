@@ -1,9 +1,6 @@
 'use client';
 
-import { Search, X, Filter, Calendar as CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { th } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { Search, X, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,15 +18,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { categoryLabels, statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
-import type { AssetFilters as AssetFiltersType, AssetStatus, LocationOption, AssetCondition } from '@/types/asset';
+import {
+  statusLabels,
+  locationOptions,
+  conditionLabels,
+} from '@/constants/asset';
+import type {
+  AssetFilters as AssetFiltersType,
+  AssetStatus,
+  LocationOption,
+  AssetCondition,
+} from '@/types/asset';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AssetFiltersProps {
@@ -45,106 +45,32 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
     filters.status,
     filters.location,
     filters.condition,
-    filters.startDate,
-    filters.endDate,
+    filters.fiscalYear,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
     onFiltersChange({ assetName: filters.assetName });
   };
 
-  // --- Logic การจัดการวันที่ (อัปเดตให้รับค่าเป็น Date Object จาก shadcn) ---
-  const handleStartDateChange = (date: Date | undefined) => {
-    const today = format(new Date(), 'yyyy-MM-dd'); // Format วันนี้เป็น yyyy-MM-dd
-
-    if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      onFiltersChange({
-        ...filters,
-        startDate: formattedDate,
-        endDate: filters.endDate ? filters.endDate : today,
-      });
-    } else {
-      onFiltersChange({
-        ...filters,
-        startDate: undefined,
-        endDate: undefined,
-      });
-    }
-  };
-
-  const handleEndDateChange = (date: Date | undefined) => {
-    if (!filters.startDate) return;
-    onFiltersChange({
-      ...filters,
-      endDate: date ? format(date, 'yyyy-MM-dd') : undefined,
-    });
-  };
-
-  // ฟังก์ชันช่วยจำกัดไม่ให้เลือกวันสิ้นสุดก่อนวันเริ่มต้น
-  const disableDatesBeforeStart = (date: Date) => {
-    if (!filters.startDate) return false;
-    const startDate = new Date(filters.startDate + 'T00:00:00'); // Force local time
-    startDate.setHours(0, 0, 0, 0);
-    return date < startDate;
-  };
+  const fiscalYearSelect = (
+    <Input
+      placeholder="ค้นหาปีงบประมาณ..."
+      value={filters.fiscalYear || ''}
+      onChange={(e) =>
+        onFiltersChange({
+          ...filters,
+          fiscalYear: e.target.value || undefined,
+        })
+      }
+      className={isMobile ? 'w-full' : 'w-[130px]'}
+    />
+  );
 
   const FilterContent = () => (
     <div className="space-y-4">
-      {/* ส่วนกรอกวันที่ สำหรับ Mobile (ใช้ shadcn DatePicker) */}
-      <div className="grid grid-cols-2 gap-4 px-4">
-        <div className="space-y-2 flex flex-col">
-          <label className="text-sm font-medium text-muted-foreground">วันที่เริ่มต้น</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'w-full justify-start text-left font-normal px-3',
-                  !filters.startDate && 'text-muted-foreground'
-                )}
-              >
-                <CalendarIcon className="mr-2 size-4" />
-                {filters.startDate ? format(new Date(filters.startDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={filters.startDate ? new Date(filters.startDate) : undefined}
-                onSelect={handleStartDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="space-y-2 flex flex-col">
-          <label className="text-sm font-medium text-muted-foreground">วันที่สิ้นสุด</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                disabled={!filters.startDate}
-                className={cn(
-                  'w-full justify-start text-left font-normal px-3',
-                  !filters.endDate && 'text-muted-foreground'
-                )}
-              >
-                <CalendarIcon className="mr-2 size-4" />
-                {filters.endDate ? format(new Date(filters.endDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={filters.endDate ? new Date(filters.endDate) : undefined}
-                onSelect={handleEndDateChange}
-                disabled={disableDatesBeforeStart}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+      <div className="space-y-2 px-4">
+        <label className="text-sm font-medium">ปีงบประมาณ</label>
+        {fiscalYearSelect}
       </div>
 
       <div className="space-y-2 px-4">
@@ -163,9 +89,9 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">ทั้งหมด</SelectItem>
-            {Object.entries(locationOptions).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
+            {locationOptions.map((loc) => (
+              <SelectItem key={loc} value={loc}>
+                {loc}
               </SelectItem>
             ))}
           </SelectContent>
@@ -224,11 +150,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
       {activeFiltersCount > 0 && (
         <div className="px-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={clearFilters}
-          >
+          <Button variant="outline" className="w-full" onClick={clearFilters}>
             <X className="mr-2 size-4" />
             ล้างตัวกรอง
           </Button>
@@ -239,14 +161,13 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      {/* Search Input */}
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="ค้นหาด้วยชื่อครุภัณฑ์..."
           value={filters.assetName || ''}
           onChange={(e) =>
-            onFiltersChange({ ...filters, assetName : e.target.value })
+            onFiltersChange({ ...filters, assetName: e.target.value })
           }
           className="pl-9"
         />
@@ -262,7 +183,6 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
         )}
       </div>
 
-      {/* Mobile: Filter Sheet */}
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
@@ -287,10 +207,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           </SheetContent>
         </Sheet>
       ) : (
-        /* Desktop: Inline Selects & Dates */
         <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
-          {/* ส่วนเลือกวันที่ (Desktop) - ปรับเป็น shadcn Popover */}
-
+          {fiscalYearSelect}
           <Select
             value={filters.location || 'all'}
             onValueChange={(value) =>
@@ -305,9 +223,9 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">ทุกสถานที่</SelectItem>
-              {Object.entries(locationOptions).map(([key, label]) => (
-                <SelectItem key={key} value={label}>
-                  {label}
+              {locationOptions.map((loc) => (
+                <SelectItem key={loc} value={loc}>
+                  {loc}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -357,71 +275,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-1 bg-background border border-input rounded-md px-2 py-1 h-9 focus-within:ring-1 focus-within:ring-ring">
-            
-            {/* Popover วันที่เริ่มต้น */}
-            <div className="flex items-center">
-              <span className="text-xs font-medium text-muted-foreground select-none pl-1 mr-1">เริ่ม:</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      'h-8 w-[110px] justify-start text-left font-normal px-2 text-xs',
-                      !filters.startDate && 'text-muted-foreground'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 size-3" />
-                    {filters.startDate ? format(new Date(filters.startDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={filters.startDate ? new Date(filters.startDate) : undefined}
-                    onSelect={handleStartDateChange}
-                    initialFocus
-                    captionLayout="dropdown"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <span className="text-muted-foreground/30 text-sm">|</span>
-
-            {/* Popover วันที่สิ้นสุด */}
-            <div className="flex items-center">
-              <span className="text-xs font-medium text-muted-foreground select-none pl-1 mr-1">สิ้นสุด:</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    disabled={!filters.startDate}
-                    className={cn(
-                      'h-8 w-[110px] justify-start text-left font-normal px-2 text-xs',
-                      !filters.endDate && 'text-muted-foreground'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 size-3" />
-                    {filters.endDate ? format(new Date(filters.endDate), 'd MMM yy', { locale: th }) : <span>เลือกวันที่</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={filters.endDate ? new Date(filters.endDate) : undefined}
-                    onSelect={handleEndDateChange}
-                    disabled={disableDatesBeforeStart}
-                    initialFocus
-                    captionLayout="dropdown"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
           {activeFiltersCount > 0 && (
-            <Button variant="ghost" size="icon" onClick={clearFilters}>
+            <Button variant="ghost" size="icon" onClick={clearFilters} aria-label="ล้างตัวกรอง">
               <X className="size-4" />
             </Button>
           )}

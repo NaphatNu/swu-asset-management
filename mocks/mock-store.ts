@@ -5,7 +5,7 @@ import type {
   Asset,
   AssetFilters,
   RepairRequest,
-  RepairPriority,
+  RepairStatus,
   DashboardStats,
   GetAssetsResponse,
   GetRepairResponse,
@@ -58,6 +58,8 @@ export function listMockAssets(filters?: AssetFilters): GetAssetsResponse {
 
     if (filters.status && asset.status !== filters.status) return false;
     if (filters.location && asset.location !== filters.location) return false;
+    if (filters.condition && asset.condition !== filters.condition) return false;
+    if (filters.fiscalYear && asset.fiscalYear !== filters.fiscalYear) return false;
     return true;
   });
   return { data: filteredAssets, total: filteredAssets.length, page: 1, pageSize: filteredAssets.length };
@@ -95,8 +97,57 @@ export function createMockAsset(
   return newAsset;
 }
 
-export function listMockRepairs(): GetRepairResponse {
-  return { data: [...repairsStore], total: repairsStore.length, page: 1, pageSize: repairsStore.length };
+export function deleteMockAssetById(id: string): boolean {
+  const idx = assetsStore.findIndex((a) => a.id === id);
+  if (idx === -1) return false;
+  assetsStore.splice(idx, 1);
+  return true;
+}
+
+export function listMockRepairs(filters?: {
+  search?: string;
+  status?: RepairStatus;
+  page?: number;
+  pageSize?: number;
+}): GetRepairResponse {
+  let data = repairsStore.map((r) => ({
+    ...r,
+    status: r.status as RepairStatus, 
+  }));
+
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    data = data.filter(
+      (r) =>
+        r.serialNumber.toLowerCase().includes(q) ||
+        r.assetName.toLowerCase().includes(q) ||
+        r.description.toLowerCase().includes(q)
+    );
+  }
+  if (filters?.status) {
+    data = data.filter((r) => r.status === filters.status);
+  }
+
+  const page = filters?.page ?? 1;
+  const pageSize = filters?.pageSize ?? data.length;
+  const start = (page - 1) * pageSize;
+  const paged = data.slice(start, start + pageSize);
+
+  return { data: paged, total: data.length, page, pageSize };
+}
+
+export function deleteMockRepair(id: string): boolean {
+  const idx = repairsStore.findIndex((r) => r.id === id);
+  if (idx === -1) return false;
+  repairsStore.splice(idx, 1);
+  return true;
+}
+
+export function updateMockRepairStatus(id: string, status: RepairStatus): RepairRequest | null {
+  const idx = repairsStore.findIndex((r) => r.id === id);
+  if (idx === -1) return null;
+  repairsStore[idx] = { ...repairsStore[idx], status };
+  return repairsStore[idx];
 }
 
 export function createMockRepair(data: {
@@ -116,7 +167,7 @@ export function createMockRepair(data: {
     serialNumber: asset?.serialNumber || 'N/A', // ดึงจาก store ถ้าหาไม่เจอใส่ N/A
     assetName: asset?.assetName || 'ไม่ระบุชื่อครุภัณฑ์', // ดึงจาก store
     description: data.description,
-    status: (data.status as any) || 'pending', // ตาม Type RepairStatus
+    status: (data.status as RepairStatus) || 'pending',
     type: (data.type as any) || 'internal-repair', // ตาม Type RepairType
     reportedByName: 'ผู้ใช้งานทดสอบ (Mock)', // ต้องมีเพราะ UI เรียกใช้
     createdAt: new Date().toISOString(), // ใช้ ISO String

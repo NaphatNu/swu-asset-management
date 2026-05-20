@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, RefreshCw } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,58 +17,118 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { mockAssets } from '@/mocks/assets';
+import { QrLabelDisplay } from '@/components/qr/qr-label-display';
+import { getAssetBySerialNumber } from '@/lib/api';
+import type { Asset } from '@/types/asset';
+
+const sizeMap = {
+  small: 150,
+  medium: 200,
+  large: 300,
+} as const;
+
+type PrintSize = keyof typeof sizeMap;
 
 function QRGeneratorContent() {
   const searchParams = useSearchParams();
-  const initialAssetId = searchParams.get('assetId') || '';
 
-  const [SerialNumber, setSerialNumber] = useState(initialAssetId);
-  const [qrSize, setQrSize] = useState<'small' | 'medium' | 'large'>('medium');
-  const [generated, setGenerated] = useState(!!initialAssetId);
+  const [assetCode, setAssetCode] = useState(searchParams.get('assetId') || '');
+  const [fiscalYear, setFiscalYear] = useState(searchParams.get('fiscalYear') || '');
+  const [mainSequenceNo, setMainSequenceNo] = useState(searchParams.get('mainSequenceNo') || '');
+  const [itemSequenceName, setItemSequenceName] = useState(
+    searchParams.get('itemSequenceName') || ''
+  );
+  const [itemSequenceNo, setItemSequenceNo] = useState(
+    searchParams.get('itemSequenceNo') || ''
+  );
+  const [printSize, setPrintSize] = useState<PrintSize>('medium');
+  const [asset, setAsset] = useState<Asset | null>(null);
+  
+  // เพิ่ม State สำหรับจำว่ากำลังเลือก subItem ชิ้นไหนอยู่ (default เป็น 'none' คือไม่ใส่)
+  const [selectedSubItemIdx, setSelectedSubItemIdx] = useState<string>('none');
+  
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const asset = mockAssets.find((a) => a.serialNumber === SerialNumber);
+  const serialPattern = /^\d{3}-\d{16}-\d{1}-\d{2}$/;
 
-  const sizeMap = {
-    small: 150,
-    medium: 200,
-    large: 300,
-  };
-
-  const handleGenerate = () => {
-    if (!SerialNumber) {
-      toast.error('กรุณากรอกรหัสครุภัณฑ์');
+  useEffect(() => {
+    if (!assetCode || !serialPattern.test(assetCode)) {
+      setAsset(null);
+      setSelectedSubItemIdx('none');
       return;
     }
 
-    const pattern = /^\d{3}-\d{16}-\d{1}-\d{2}$/;
-    if (!pattern.test(SerialNumber)) {
-      toast.error('รูปแบบรหัสไม่ถูกต้อง', {
-        description: 'รูปแบบที่ถูกต้อง: XXX-XXXXXXXXXXXXXXXX-X-XX',
-      });
-      return;
-    }
+    let mounted = true;
+    getAssetBySerialNumber(assetCode).then((data) => {
+      if (!mounted || !data) return;
+      setAsset(data);
+      if (!fiscalYear && data.fiscalYear) setFiscalYear(data.fiscalYear);
+      if (!mainSequenceNo && data.mainSequenceNo) setMainSequenceNo(data.mainSequenceNo);
+      
+      // บังคับให้ชื่อรายการใช้ assetName ของตัวหลักเสมอ
+      setItemSequenceName(data.assetName || '');
+      
+      // ตรวจสอบเงื่อนไขกรณีมีชิ้นส่วนย่อย (Sub Items)
+      if (data.subItems && data.subItems.length > 0) {
+        setSelectedSubItemIdx('none');
+        setItemSequenceNo('');
+      } else {
+        setSelectedSubItemIdx('none');
+        if (!itemSequenceNo && data.itemSequenceNo != null) {
+          setItemSequenceNo(String(data.itemSequenceNo));
+        }
+      }
+    });
 
-    setGenerated(true);
-    toast.success('สร้าง QR Code สำเร็จ');
+    return () => {
+      mounted = false;
+    };
+  }, [assetCode]);
+
+  // ฟังก์ชันจัดการตอนเปลี่ยนการเลือกชิ้นส่วนย่อย
+  const handleSubItemChange = (value: string) => {
+    setSelectedSubItemIdx(value);
+    
+    if (value === 'none' || !asset?.subItems) {
+      // ใช้ชื่อ assetName ของตัวหลักเสมอ และเคลียร์ลำดับรายการย่อย
+      setItemSequenceName(asset?.assetName || '');
+      setItemSequenceNo('');
+    } else {
+      // ดึงลำดับไอเทมย่อยมาใส่ แต่ตัวชื่อรายการยังคงล็อกให้ใช้ assetName เหมือนเดิม
+      const idx = Number(value);
+      const targetItem = asset.subItems[idx];
+      if (targetItem) {
+        setItemSequenceName(asset.assetName || '');
+        setItemSequenceNo(targetItem.itemSequenceNo != null ? String(targetItem.itemSequenceNo) : '');
+      }
+    }
   };
+
+  const labelData = {
+    fiscalYear: fiscalYear || undefined,
+    mainSequenceNo: mainSequenceNo || undefined,
+    itemSequenceName: itemSequenceName || undefined,
+    itemSequenceNo: itemSequenceNo ? Number(itemSequenceNo) : undefined,
+    fullAssetCode: assetCode,
+  };
+
+  const canPreview = Boolean(assetCode && serialPattern.test(assetCode));
 
   const handleDownload = () => {
-    if (!qrRef.current) return;
+    if (!qrRef.current || !canPreview) return;
 
     const svg = qrRef.current.querySelector('svg');
     if (!svg) return;
 
-    // Create a canvas and draw the SVG
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const size = sizeMap[qrSize];
-    canvas.width = size + 40;
-    canvas.height = size + 80;
+    const qrPixelSize = sizeMap[printSize];
+    const padding = 24;
+    const labelHeight = 72;
+    canvas.width = qrPixelSize + padding * 2;
+    canvas.height = qrPixelSize + labelHeight + padding * 2;
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     const svgData = new XMLSerializer().serializeToString(svg);
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const svgUrl = URL.createObjectURL(svgBlob);
@@ -76,25 +136,23 @@ function QRGeneratorContent() {
     img.onload = () => {
       if (!ctx) return;
 
-      // White background
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, padding, padding, qrPixelSize, qrPixelSize);
 
-      // Draw QR code
-      ctx.drawImage(img, 20, 20, size, size);
-
-      // Draw asset ID text
       ctx.fillStyle = 'black';
-      ctx.font = '14px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(SerialNumber, canvas.width / 2, size + 50);
+      ctx.font = '12px sans-serif';
+      const line1 = `ปี ${fiscalYear || '-'} (${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'})`;
+      ctx.fillText(line1, canvas.width / 2, qrPixelSize + padding + 28, canvas.width - padding * 2);
 
-      // Download
+      ctx.font = '11px monospace';
+      ctx.fillText(assetCode, canvas.width / 2, qrPixelSize + padding + 52);
+
       const link = document.createElement('a');
-      link.download = `qr-${SerialNumber}.png`;
+      link.download = `qr-${assetCode}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-
       URL.revokeObjectURL(svgUrl);
       toast.success('ดาวน์โหลด QR Code สำเร็จ');
     };
@@ -102,114 +160,165 @@ function QRGeneratorContent() {
     img.src = svgUrl;
   };
 
-  useEffect(() => {
-    if (initialAssetId) {
-      setGenerated(true);
-    }
-  }, [initialAssetId]);
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:space-y-4">
       <PageHeader
         title="สร้าง QR Code"
         description="สร้าง QR Code สำหรับติดครุภัณฑ์"
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Input Section */}
-        <Card>
+      <div className="grid gap-6 lg:grid-cols-2 print:block">
+        <Card className="print:hidden">
           <CardHeader>
             <CardTitle className="text-lg">ข้อมูล QR Code</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="assetId">รหัสครุภัณฑ์</Label>
+              <Label htmlFor="assetCode">รหัสครุภัณฑ์ (asset_code)</Label>
               <Input
-                id="assetId"
-                placeholder="เช่น 123-4567890123-4-56"
-                value={SerialNumber}
-                onChange={(e) => {
-                  setSerialNumber(e.target.value);
-                  setGenerated(false);
-                }}
+                id="assetCode"
+                placeholder="เช่น 207-3000000378580000-2-64"
+                value={assetCode}
+                onChange={(e) => setAssetCode(e.target.value)}
                 className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">
-                รูปแบบ: XXX-XXXXXXXXX-X-XX 
-              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="fiscalYear">ปีงบประมาณ</Label>
+                <Input
+                  id="fiscalYear"
+                  placeholder="เช่น 69"
+                  value={fiscalYear}
+                  onChange={(e) => setFiscalYear(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mainSequenceNo">ลำดับหลัก</Label>
+                <Input
+                  id="mainSequenceNo"
+                  placeholder="เช่น 1"
+                  value={mainSequenceNo}
+                  onChange={(e) => setMainSequenceNo(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* ส่วนเลือกชิ้นส่วนย่อย: แสดง Select แบบปิดใช้งานเมื่อไม่มีข้อมูลย่อย */}
+            {asset && (
+              <div className="space-y-2 bg-muted/40 border p-3 rounded-lg animate-in fade-in-50 duration-200">
+                <Label htmlFor="subItemSelector" className="text-muted-foreground font-semibold flex items-center justify-between">
+                  <span>เลือกชิ้นส่วนย่อย (Auto-fill ข้อมูลด้านล่าง)</span>
+                  {(!asset.subItems || asset.subItems.length === 0) && (
+                    <span className="text-xs text-destructive font-normal">(ไม่มีข้อมูลย่อย)</span>
+                  )}
+                </Label>
+                <Select
+                  value={selectedSubItemIdx}
+                  onValueChange={handleSubItemChange}
+                  disabled={!asset.subItems || asset.subItems.length === 0}
+                >
+                  <SelectTrigger id="subItemSelector" className={asset.subItems && asset.subItems.length > 0 ? "border-purple-500/30 focus:ring-purple-500" : ""}>
+                    <SelectValue placeholder="ไม่ใส่" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">ไม่ใส่</SelectItem>
+                    {asset.subItems?.map((item, idx) => (
+                      <SelectItem key={idx} value={String(idx)}>
+                        ลำดับที่ {item.itemSequenceNo} — {item.itemSequenceName || 'ไม่มีชื่อชิ้นส่วน'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="itemSequenceName">ชื่อรายการ</Label>
+                <Input
+                  id="itemSequenceName"
+                  placeholder="เช่น ชุดปฏิบัติการคอมพิวเตอร์"
+                  value={itemSequenceName}
+                  onChange={(e) => setItemSequenceName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="itemSequenceNo">ลำดับรายการ</Label>
+                <Input
+                  id="itemSequenceNo"
+                  type="number"
+                  min={1}
+                  placeholder="เช่น 1"
+                  value={itemSequenceNo}
+                  onChange={(e) => setItemSequenceNo(e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label>ขนาด QR Code</Label>
+              <Label>ขนาดพิมพ์ (print_size)</Label>
               <Select
-                value={qrSize}
-                onValueChange={(value) =>
-                  setQrSize(value as 'small' | 'medium' | 'large')
-                }
+                value={printSize}
+                onValueChange={(v) => setPrintSize(v as PrintSize)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="small">เล็ก (150x150)</SelectItem>
-                  <SelectItem value="medium">กลาง (200x200)</SelectItem>
-                  <SelectItem value="large">ใหญ่ (300x300)</SelectItem>
+                  <SelectItem value="small">เล็ก (150×150)</SelectItem>
+                  <SelectItem value="medium">กลาง (200×200)</SelectItem>
+                  <SelectItem value="large">ใหญ่ (300×300)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {asset && (
-              <div className="rounded-lg bg-muted p-3 space-y-1">
-                <p className="text-xs text-muted-foreground">พบครุภัณฑ์:</p>
-                <p className="text-sm font-medium">{asset.assetName}</p>
-                <p className="text-xs text-muted-foreground">{asset.location}</p>
-              </div>
+            {!canPreview && assetCode && (
+              <p className="text-sm text-destructive">
+                รูปแบบรหัสไม่ถูกต้อง (XXX-XXXXXXXXXXXXXXXX-X-XX)
+              </p>
             )}
-
-            <Button onClick={handleGenerate} className="w-full">
-              <RefreshCw className="mr-2 size-4" />
-              สร้าง QR Code
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Preview Section */}
-        <Card>
-          <CardHeader>
+        <Card className="print:border-0 print:shadow-none">
+          <CardHeader className="print:hidden">
             <CardTitle className="text-lg">ตัวอย่าง QR Code</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center gap-4">
-              {generated && SerialNumber ? (
+            <div className="flex flex-col items-center gap-4 print:py-0">
+              {canPreview ? (
                 <>
                   <div
                     ref={qrRef}
-                    className="flex flex-col items-center gap-3 rounded-xl border bg-white p-6"
+                    className="qr-print-label flex flex-col items-center gap-3 rounded-xl border bg-white p-6 print:border-0 print:p-2 print:shadow-none"
                   >
                     <QRCodeSVG
-                      value={`https://assets.swu.ac.th/${SerialNumber}`}
-                      size={sizeMap[qrSize]}
+                      value={`https://assets.swu.ac.th/${assetCode}`}
+                      size={sizeMap[printSize]}
                       level="H"
                       includeMargin={false}
                       fgColor="#000000"
                       bgColor="#ffffff"
                     />
-                    <p className="font-mono text-sm text-gray-700">{SerialNumber}</p>
+                    <QrLabelDisplay data={labelData} printMode className="max-w-full" />
                   </div>
 
                   <Button
                     onClick={handleDownload}
                     variant="outline"
-                    className="w-full max-w-xs"
+                    className="w-full max-w-xs print:hidden"
+                    type="button"
                   >
                     <Download className="mr-2 size-4" />
                     ดาวน์โหลด PNG
                   </Button>
                 </>
               ) : (
-                <div className="flex aspect-square w-full max-w-xs items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/50">
+                <div className="flex aspect-square w-full max-w-xs items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/50 print:hidden">
                   <p className="text-sm text-muted-foreground text-center px-4">
-                    กรอกรหัสครุภัณฑ์แล้วกด "สร้าง QR Code"
+                    กรอกรหัสครุภัณฑ์ให้ครบเพื่อดูตัวอย่าง
                   </p>
                 </div>
               )}
@@ -217,6 +326,24 @@ function QRGeneratorContent() {
           </CardContent>
         </Card>
       </div>
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .qr-print-label,
+          .qr-print-label * {
+            visibility: visible;
+          }
+          .qr-print-label {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+      `}</style>
     </div>
   );
 }

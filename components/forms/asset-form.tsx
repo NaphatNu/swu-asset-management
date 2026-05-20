@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Command,
@@ -10,7 +10,7 @@ import {
   CommandItem,
   CommandList
 } from '@/components/ui/command';
-import { CalendarIcon, Check, ChevronsUpDown, ScanLine } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown, Plus, ScanLine, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 
@@ -32,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { assetFormSchema, type AssetFormValues } from '@/lib/validations';
-import { categoryLabels, statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
+import { statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -72,16 +72,19 @@ export function AssetForm({
       condition: 'normal',
       ownerName: '',
       acquiredDate: '',
-      // category: undefined,
-      // description: '',
-      // purchaseDate: '',
-      // purchasePrice: undefined,
-      // warrantyExpiry: '',
+      fiscalYear: '',
+      mainSequenceNo: '',
+      subItems: [],
       ...defaultValues,
     },
   });
 
   const router = useRouter();
+
+  const { fields: subItemFields, append: appendSubItem, remove: removeSubItem } = useFieldArray({
+    control,
+    name: 'subItems',
+  });
 
   // 1. เฝ้าดูการเปลี่ยนแปลงของ serialNumber
   const serialNumberValue = watch('serialNumber');
@@ -108,8 +111,19 @@ export function AssetForm({
           setValue('mainSerialNumber', rawMainSerial, { shouldValidate: true });
         }
       }
+
+      if (parts.length >= 4) {
+        const fiscalYear = parts[3];
+        setValue('fiscalYear', fiscalYear, { shouldValidate: true });
+      }
     }
   }, [serialNumberValue, setValue]);
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log("❌ Validation Errors:", errors);
+    }
+  }, [errors]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -120,7 +134,7 @@ export function AssetForm({
         </CardHeader>
         <CardContent className="space-y-4">
 
-          {/* Asset ID */}
+          {/* Serial Number */}
           <div>
             <label>รหัสครุภัณฑ์เดิม / Serial Number *</label>
             <div className="flex gap-2">
@@ -142,7 +156,7 @@ export function AssetForm({
             )}
           </div>
 
-          {/* Serial number */}
+          {/* Main Serial Number */}
           <div>
             <label>หมายเลขครุภัณฑ์ หลัก-ย่อย *</label>
             <Input
@@ -156,19 +170,35 @@ export function AssetForm({
             )}
           </div>
 
-          {/* Name */}
+          {/* Asset Name */}
           <div>
-            <label>รายการครุภัณฑ์ *</label>
+            <label>ชื่อรายการครุภัณฑ์ *</label>
             <Input {...register('assetName')} />
             {errors.assetName && (
               <p className="text-sm font-medium text-destructive">{errors.assetName.message}</p>
             )}
           </div>
 
+          <section className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label>ปีงบประมาณ *</label>
+              <Input {...register('fiscalYear')} placeholder="เช่น 69" />
+              {errors.fiscalYear && (
+                <p className="text-sm font-medium text-destructive">{errors.fiscalYear.message}</p>
+              )}
+            </div>
+            <div>
+              <label>ลำดับรายการหลัก *</label>
+              <Input type="number" min={0} {...register('mainSequenceNo')} placeholder="เช่น 1" />
+              {errors.mainSequenceNo && (
+                <p className="text-sm font-medium text-destructive">{errors.mainSequenceNo.message}</p>
+              )}
+            </div>
+          </section>
 
           {/* Location */}
           <div>
-            <label className="text-sm font-medium">สถานที่ *</label>
+            <label className="text-sm font-medium">สถานที่</label>
             <Controller
               control={control}
               name="location"
@@ -221,9 +251,6 @@ export function AssetForm({
                 </Popover>
               )}
             />
-            {errors.location && (
-              <p className="text-sm font-medium text-destructive">{errors.location.message}</p>
-            )}
           </div>
 
           {/* Status */}
@@ -274,14 +301,58 @@ export function AssetForm({
             />
           </div>
 
+        </CardContent>
+      </Card>
 
-
-          {/* Description */}
-          {/* <div>
-            <label>รายละเอียด</label>
-            <Textarea {...register('description')} />
-          </div> */}
-
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-lg">รายการย่อย</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              appendSubItem({
+                itemSequenceNo: subItemFields.length + 1,
+                itemSequenceName: '',
+              })
+            }
+          >
+            <Plus className="mr-1 size-4" />
+            เพิ่มรายการย่อย
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {subItemFields.length === 0 ? (
+            <p className="text-sm text-muted-foreground">ยังไม่มีรายการย่อย (ไม่บังคับ)</p>
+          ) : (
+            subItemFields.map((field, index) => (
+              <div key={field.id} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label>ลำดับรายการย่อย *</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...register(`subItems.${index}.itemSequenceNo` as const)}
+                  />
+                </div>
+                <fieldset className="min-w-0 flex-[2] border-0 p-0 m-0">
+                  <label>ชื่อรายการย่อย *</label>
+                  <Input {...register(`subItems.${index}.itemSequenceName` as const)} />
+                </fieldset>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive shrink-0"
+                  onClick={() => removeSubItem(index)}
+                  aria-label="ลบรายการย่อย"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 

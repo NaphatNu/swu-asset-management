@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
-import { getMockAssetBySerialNumber } from '@/lib/api/mock-store';
+import { getMockAssetBySerialNumber } from '@/mocks/mock-store';
 import type { InspectionFormValues } from '@/lib/validations';
 import type { Asset,} from '@/types/asset';
 

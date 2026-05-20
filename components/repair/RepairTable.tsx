@@ -1,8 +1,8 @@
 'use client';
 
-import { 
-  MoreHorizontal, Eye, Edit, Calendar, 
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight 
+import {
+  MoreHorizontal, Eye, Edit, Trash2, Calendar,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import {
   Table,
@@ -17,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -25,9 +26,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { RepairStatusBadge, RepairTypeBadge } from '@/components/assets/status-badge';
+import { RepairStatusBadge } from '@/components/badge/status-badge';
+import { TableEmptyState } from '@/components/shared/table-empty-state';
+import { TableLoadingSkeleton } from '@/components/shared/table-loading-skeleton';
 import type { RepairRequest } from '@/types/asset';
 
 interface RepairTableProps {
@@ -37,58 +40,92 @@ interface RepairTableProps {
     pageSize: number;
     total: number;
   };
+  isLoading?: boolean;
+  isDeletingId?: string | null;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onView?: (request: RepairRequest) => void;
-  onEdit?: (request: RepairRequest) => void;
+  onUpdateStatus?: (request: RepairRequest) => void;
+  onDelete?: (request: RepairRequest) => void;
 }
 
-export function RepairTable({ 
-  data, 
-  pagination, 
-  onPageChange, 
-  onPageSizeChange, 
-  onView, 
-  onEdit 
+export function RepairTable({
+  data,
+  pagination,
+  isLoading,
+  isDeletingId,
+  onPageChange,
+  onPageSizeChange,
+  onView,
+  onUpdateStatus,
+  onDelete,
 }: RepairTableProps) {
-  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
-  const startItem = (pagination.page - 1) * pagination.pageSize + 1;
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.pageSize));
+  const startItem = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
   const endItem = Math.min(pagination.page * pagination.pageSize, pagination.total);
+
+  if (isLoading) {
+    return <TableLoadingSkeleton columns={6} rows={5} />;
+  }
 
   if (data.length === 0) {
     return (
-      <Card><CardContent className="py-12 text-center text-muted-foreground">ไม่พบรายการแจ้งซ่อม</CardContent></Card>
+      <Card>
+        <CardContent className="p-0">
+          <table className="w-full">
+            <tbody>
+              <TableEmptyState
+                title="ไม่พบรายการแจ้งซ่อม"
+                description="ลองปรับตัวกรองหรือสร้างคำขอแจ้งซ่อมใหม่"
+                asTableRow={false}
+              />
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Mobile View */}
       <div className="grid gap-4 md:hidden">
         {data.map((request) => (
-          <Card key={request.id} onClick={() => onView?.(request)}>
+          <Card key={request.id}>
             <CardContent className="p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <p className="text-xs font-mono text-muted-foreground">{request.serialNumber}</p>
+              <div className="flex justify-between items-start gap-2">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-xs font-mono text-muted-foreground truncate">
+                    {request.serialNumber}
+                  </p>
                   <h4 className="font-medium text-sm line-clamp-1">{request.assetName}</h4>
                 </div>
                 <RepairStatusBadge status={request.status} />
               </div>
-              {/* รายละเอียดในมือถือ */}
               <p className="text-sm text-muted-foreground line-clamp-2 bg-muted/50 p-2 rounded">
                 {request.description || 'ไม่มีรายละเอียด'}
               </p>
-              <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
-                <span>{request.reportedByName}</span>
-                <div className="flex items-center gap-1"><Calendar className="size-3" />{new Date(request.createdAt).toLocaleDateString('th-TH')}</div>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                <span className="text-xs text-muted-foreground">{request.reportedByName}</span>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" onClick={() => onUpdateStatus?.(request)}>
+                    สถานะ
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => onDelete?.(request)}
+                    disabled={isDeletingId === request.id}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Desktop View */}
       <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
         <Table>
           <TableHeader>
@@ -98,57 +135,118 @@ export function RepairTable({
               <TableHead>รายละเอียดการซ่อม</TableHead>
               <TableHead className="w-[120px]">สถานะ</TableHead>
               <TableHead className="w-[120px]">วันที่แจ้ง</TableHead>
-              {/* <TableHead className="w-[70px]"></TableHead> */}
+              <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((request) => (
-              <TableRow key={request.id} className="cursor-pointer" onClick={() => onView?.(request)}>
+              <TableRow key={request.id}>
                 <TableCell className="font-mono text-xs">{request.serialNumber}</TableCell>
                 <TableCell className="font-medium">{request.assetName}</TableCell>
                 <TableCell>
-                  <span className="text-sm line-clamp-1 text-muted-foreground" title={request.description}>
+                  <span
+                    className="text-sm line-clamp-1 text-muted-foreground"
+                    title={request.description}
+                  >
                     {request.description || '-'}
                   </span>
                 </TableCell>
-                <TableCell><RepairStatusBadge status={request.status} /></TableCell>
+                <TableCell>
+                  <RepairStatusBadge status={request.status} />
+                </TableCell>
                 <TableCell className="text-sm">
                   {new Date(request.createdAt).toLocaleDateString('th-TH')}
                 </TableCell>
-                {/* <TableCell onClick={(e) => e.stopPropagation()}>
+                <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="size-8"><MoreHorizontal className="size-4" /></Button>
+                      <Button variant="ghost" size="icon" className="size-8">
+                        <MoreHorizontal className="size-4" />
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onView?.(request)}><Eye className="mr-2 size-4" /> ดูรายละเอียด</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit?.(request)}><Edit className="mr-2 size-4" /> แก้ไขสถานะ</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onView?.(request)}>
+                        <Eye className="mr-2 size-4" /> ดูรายละเอียด
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onUpdateStatus?.(request)}>
+                        <Edit className="mr-2 size-4" /> อัปเดตสถานะ
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onDelete?.(request)}
+                        className="text-destructive focus:text-destructive"
+                        disabled={isDeletingId === request.id}
+                      >
+                        <Trash2 className="mr-2 size-4" /> ลบ
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell> */}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
 
-        {/* Footer Pagination */}
         <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-sm">
           <div className="flex items-center gap-4">
             <span className="text-muted-foreground">แสดงหน้าละ</span>
-            <Select value={pagination.pageSize.toString()} onValueChange={(v) => onPageSizeChange(Number(v))}>
-              <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+            <Select
+              value={pagination.pageSize.toString()}
+              onValueChange={(v) => onPageSizeChange(Number(v))}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {[10, 20, 50].map(s => <SelectItem key={s} value={s.toString()}>{s}</SelectItem>)}
+                {[10, 20, 50].map((s) => (
+                  <SelectItem key={s} value={s.toString()}>
+                    {s}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <span className="text-muted-foreground">รายการที่ {startItem}-{endItem} จาก {pagination.total}</span>
+            <span className="text-muted-foreground">
+              รายการที่ {startItem}-{endItem} จาก {pagination.total}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="mr-4">หน้า {pagination.page} จาก {totalPages}</span>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onPageChange(1)} disabled={pagination.page === 1}><ChevronsLeft className="size-4" /></Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onPageChange(pagination.page - 1)} disabled={pagination.page === 1}><ChevronLeft className="size-4" /></Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onPageChange(pagination.page + 1)} disabled={pagination.page === totalPages}><ChevronRight className="size-4" /></Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onPageChange(totalPages)} disabled={pagination.page === totalPages}><ChevronsRight className="size-4" /></Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onPageChange(1)}
+              disabled={pagination.page === 1}
+            >
+              <ChevronsLeft className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onPageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onPageChange(pagination.page + 1)}
+              disabled={pagination.page >= totalPages}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onPageChange(totalPages)}
+              disabled={pagination.page >= totalPages}
+            >
+              <ChevronsRight className="size-4" />
+            </Button>
           </div>
         </div>
       </div>

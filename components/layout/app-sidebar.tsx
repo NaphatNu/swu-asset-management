@@ -53,7 +53,7 @@ const mainNavItems = [
   },
   {
     title: 'เพิ่มครุภัณฑ์',
-    href: '/assets/new',
+    href: '/assets-new',
     icon: Plus,
   },
   {
@@ -142,7 +142,7 @@ export function AppSidebar() {
                     asChild
                     isActive={
                       pathname === item.href ||
-                      (item.href !== '/' && pathname.startsWith(item.href))
+                      (item.href !== '/' && pathname.startsWith(`${item.href}/`))
                     }
                     tooltip={item.title}
                   >

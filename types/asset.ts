@@ -5,11 +5,18 @@ import { locationOptions } from "@/constants/asset";
 export type AssetStatus = 'available' | 'in-use' | 'under-repair' | 'lost' | 'pending-disposal' | 'disposed';
 export type AssetCondition = 'normal' | 'minor-damage' | 'major-damage' | 'critical';
 export type RepairStatus = 'open' | 'in-progress' | 'completed';
+/** @deprecated Legacy backend values – mapped in API layer */
+export type LegacyRepairStatus = 'open' | 'in-progress';
 export type RepairType = 'internal-repair' | 'external-repair' ;
 export type AssetCategory = 'computer' | 'furniture' | 'equipment' | 'vehicle' | 'other';
 export type RepairPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type Action = 'update-condition' | 'update-asset' | 'create-repair' ;
+export type Action = 'update-condition' | 'update-asset' | 'create-repair' | 'delete-asset' | 'delete-repair' | 'update-status-repair';
 export type LocationOption = typeof locationOptions[number];
+
+export interface AssetSubItem {
+  itemSequenceNo: number;
+  itemSequenceName: string;
+}
 
 export interface Asset {
   id: string;
@@ -25,6 +32,11 @@ export interface Asset {
   updatedAt: string;
   createdByName: string;
   createdAt: string;
+  fiscalYear?: string;
+  mainSequenceNo?: string;
+  itemSequenceNo?: number;
+  itemSequenceName?: string;
+  subItems?: AssetSubItem[];
 }
 
 export interface GetAssetsResponse {
@@ -127,7 +139,10 @@ export interface AssetFilters {
   condition?: AssetCondition;
   location?: LocationOption;
   assetName?: string;
+  fiscalYear?: string;
+  /** @deprecated Use fiscalYear instead */
   startDate?: string;
+  /** @deprecated Use fiscalYear instead */
   endDate?: string;
   page?: number;
   pageSize?: number;

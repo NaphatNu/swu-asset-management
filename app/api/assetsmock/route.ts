@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listMockAssets } from '@/lib/api/mock-store';
+import { listMockAssets } from '@/mocks/mock-store';
 // เพิ่มการนำเข้า LocationOption (หรือชื่อ Type ที่คุณใช้สำหรับ location)
 import type { AssetCategory, AssetStatus, LocationOption } from '@/types/asset';
 

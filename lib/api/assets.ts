@@ -5,7 +5,8 @@ import {
   createMockAsset,
   getMockAssetBySerialNumber,
   updateMockAssetBySerialNumber,
-} from '@/lib/api/mock-store';
+  deleteMockAssetById,
+} from '@/mocks/mock-store';
 import type { AssetFormValues } from '@/lib/validations';
 import type { Asset, AssetFilters, GetAssetsLogsResponse, GetAssetsResponse } from '@/types/asset';
 
@@ -18,6 +19,11 @@ interface CreateAssetBackendPayload {
   condition: Asset['condition'];
   ownerName: string;
   acquiredDate: string;
+  fiscalYear?: string;
+  mainSequenceNo?: string;
+  itemSequenceNo?: number;
+  itemSequenceName?: string;
+  subItems?: { itemSequenceNo: number; itemSequenceName: string }[];
 }
 
 function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAssetBackendPayload {
@@ -30,6 +36,9 @@ function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAsse
     condition: values.condition ?? 'normal',
     ownerName: values.ownerName ?? '',
     acquiredDate: values.acquiredDate ?? '',
+    fiscalYear: values.fiscalYear,
+    mainSequenceNo: values.mainSequenceNo,
+    subItems: values.subItems,
   };
 }
 
@@ -99,24 +108,10 @@ export async function updateAsset(
         mainSerialNumber: asset?.mainSerialNumber || '',
         serialNumber: asset?.serialNumber || serialNumber,
         assetName: payload.assetName,
-        // category: payload.category,
         location: payload.location,
         status: payload.status,
         ownerName: asset?.ownerName || '',
         acquiredDate: asset?.acquiredDate || '',
-        // description: payload.description?.trim()
-        //   ? payload.description
-        //   : undefined,
-        // purchaseDate: payload.purchaseDate?.trim()
-        //   ? payload.purchaseDate
-        //   : undefined,
-        // purchasePrice:
-        //   typeof payload.purchasePrice === 'number'
-        //     ? payload.purchasePrice
-        //     : undefined,
-        // warrantyExpiry: payload.warrantyExpiry?.trim()
-        //   ? payload.warrantyExpiry
-        //   : undefined,
       });
       if (!updated) {
         throw new Error('Asset not found');
@@ -151,6 +146,22 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
         id: fallbackData.id,
       });
       return fallbackData;
+    }
+    throw error;
+  }
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  try {
+    await apiClient.delete( `/assets/${encodeURIComponent(id)}`);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.warn('[API][ASSETS] deleteAsset fallback to mock');
+      const deleted = deleteMockAssetById(id);
+      if (!deleted) {
+        throw new Error('Asset not found');
+      }
+      return;
     }
     throw error;
   }

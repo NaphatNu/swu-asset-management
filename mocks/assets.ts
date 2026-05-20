@@ -16,6 +16,10 @@ export const mockAssets: Asset[] = [
     createdByName: 'System Admin', // เพิ่มให้ตรง Interface
     updatedAt: '2024-01-15T14:30:00Z',
     updatedByName: 'อ.สมศักดิ์ รักเรียน', // เพิ่มให้ตรง Interface
+    fiscalYear: '69',
+    mainSequenceNo: '1',
+    itemSequenceNo: 1,
+    itemSequenceName: 'ชุดปฏิบัติการคอมพิวเตอร์',
   },
   {
     id: '2',

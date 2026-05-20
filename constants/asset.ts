@@ -32,6 +32,9 @@ export const actionLabels: Record<Action, string> = {
   'update-condition': 'อัปเดตสภาพ',
   'update-asset': 'อัปเดตครุภัณฑ์',
   'create-repair': 'สร้างคำขอซ่อม',
+  'delete-asset': 'ลบครุภัณฑ์',
+  'delete-repair': 'ลบคำขอซ่อม',
+  'update-status-repair': 'อัปเดตสถานะซ่อม',
 };
 
 // Repair status labels for display

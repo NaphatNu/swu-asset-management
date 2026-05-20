@@ -25,7 +25,7 @@ const navItems = [
   },
   {
     title: 'เพิ่ม',
-    href: '/assets/new',
+    href: '/assets-new',
     icon: Plus,
   },
   {

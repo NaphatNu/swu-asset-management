@@ -1,28 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, LayoutGrid, LayoutList } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import {
-  AssetFilters,
-  AssetCard,
-  AssetTable,
-  AssetDetailDrawer,
-} from '@/components/assets';
-import { getAssets, getAssetsLogs, getAssetsSearch } from '@/lib/api';
+import { getAssetsLogs } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { Asset, AssetLog, AssetFilters as FiltersType } from '@/types/asset';
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import type { AssetLog, AssetFilters as FiltersType } from '@/types/asset';
 import { AssetLogTable } from '@/components/assets/asset-log-table';
 import { AssetCardLog } from '@/components/assets/asset-card-log';
 import { AssetLogFilters } from '@/components/assets/asset-log-filters';
 import { AssetLogDetailDrawer } from '@/components/assets/asset-log-detail-drawer';
+import { toast } from 'sonner';
 
-export default function AssetsPage() {
+export default function AssetsLogPage() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -33,39 +27,31 @@ export default function AssetsPage() {
   const [selectedAsset, setSelectedAsset] = useState<AssetLog | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+
+  const loadAssetsLog = useCallback(async () => {
     setIsLoading(true);
-
-    getAssetsLogs({ ...filters, page: pagination.page, pageSize: pagination.pageSize })
-      .then((res) => {
-        if (mounted) {
-          setAssets(res.data); // เก็บเฉพาะ Array ของ Assets
-          setPagination(prev => ({
-            ...prev,
-            total: res.total,
-            // ไม่ต้อง set page ซ้ำที่นี่เพื่อป้องกัน loop ถ้า API return page เดิมกลับมา
-          }));
-          setIsLoading(false);
-        }
-      })
-      .finally(() => {
-        if (mounted) setIsLoading(false);
+    try {
+      const res = await getAssetsLogs({
+        ...filters,
+        page: pagination.page,
+        pageSize: pagination.pageSize,
       });
+      setAssets(res.data);
+      setPagination((prev) => ({ ...prev, total: res.total }));
+    } catch {
+      toast.error('ไม่สามารถโหลดรายการครุภัณฑ์ได้');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, pagination.page, pagination.pageSize]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [filters, pagination.page]);
+  useEffect(() => {
+    loadAssetsLog();
+  }, [loadAssetsLog]);
 
-  // ฟังก์ชันสำหรับเปลี่ยนหน้า
-  const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-    window.scrollTo(0, 0); // เลื่อนขึ้นบนเมื่อเปลี่ยนหน้า
-  };
-
-  // คำนวณจำนวนหน้าทั้งหมด
-  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  }, [filters]);
 
   const handleViewAsset = (asset: AssetLog) => {
     setSelectedAsset(asset);
@@ -87,7 +73,7 @@ export default function AssetsPage() {
         description={`ทั้งหมด ${assets.length} รายการ`}
       >
         <Button asChild>
-          <Link href="/assets/new">
+          <Link href="/assets-new">
             <Plus className="mr-2 size-4" />
             เพิ่มครุภัณฑ์
           </Link>
@@ -153,7 +139,8 @@ export default function AssetsPage() {
       ) : (
         <AssetLogTable
           assetsLogs={assets}
-          pagination={pagination} // { page: 1, pageSize: 20, total: 150 }
+          pagination={pagination}
+          isLoading={isLoading}
           onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))}
           onPageSizeChange={(newSize) => setPagination(prev => ({ ...prev, pageSize: newSize, page: 1 }))}
           onView={handleViewAsset}
@@ -162,7 +149,7 @@ export default function AssetsPage() {
         />
       )}
 
-        <AssetLogDetailDrawer
+      <AssetLogDetailDrawer
         log={selectedAsset}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}

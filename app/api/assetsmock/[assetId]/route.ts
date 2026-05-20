@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assetFormSchema } from '@/lib/validations';
 import type { Asset } from '@/types/asset';
-import { getMockAssetBySerialNumber, updateMockAssetBySerialNumber } from '@/lib/api/mock-store';
+import { getMockAssetBySerialNumber, updateMockAssetBySerialNumber } from '@/mocks/mock-store';
 
 type RouteContext = { params: Promise<{ assetId: string }> };
 

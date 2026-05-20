@@ -27,8 +27,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ActionBadge, ConditionBadge, StatusBadge } from './status-badge';
+import { ActionBadge, ConditionBadge, StatusBadge } from '../badge/status-badge';
 import type { Asset, AssetLog } from '@/types/asset';
+import { TableLoadingSkeleton } from '../shared/table-loading-skeleton';
 
 interface AssetLogTableProps {
     assetsLogs: AssetLog[];
@@ -37,6 +38,7 @@ interface AssetLogTableProps {
         pageSize: number;
         total: number;
     };
+    isLoading?: boolean;
     onPageChange: (page: number) => void;
     onPageSizeChange?: (pageSize: number) => void;
     onView?: (asset: AssetLog) => void;
@@ -48,6 +50,7 @@ interface AssetLogTableProps {
 export function AssetLogTable({
     assetsLogs,
     pagination,
+    isLoading,
     onPageChange,
     onPageSizeChange,
     onView,
@@ -60,6 +63,10 @@ export function AssetLogTable({
     // คำนวณช่วงของรายการที่แสดง เช่น 1-20
     const startItem = (pagination.page - 1) * pagination.pageSize + 1;
     const endItem = Math.min(pagination.page * pagination.pageSize, pagination.total);
+
+    if (isLoading) {
+        return <TableLoadingSkeleton columns={11} rows={6} />;
+    }
 
     return (
         <div className="rounded-lg border bg-card overflow-hidden">
