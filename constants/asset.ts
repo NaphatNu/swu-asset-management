@@ -119,6 +119,8 @@ export const locationOptions = [
   'ห้อง G656',
   'ห้อง G657',
   'ห้อง G658',
+  'ห้อง G659',
+  'ห้อง G660',
   'อื่นๆ',
 ] as const;
 
