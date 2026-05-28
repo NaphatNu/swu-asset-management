@@ -58,6 +58,11 @@ export const priorityLabels: Record<string, string> = {
   urgent: 'เร่งด่วน',
 };
 
+export const budgetTypeLabels: Record<string, string> = {
+  'government-budget': 'งบประมาณแผ่นดิน',
+  'income-budget': 'งบประมาณรายได้',
+};
+
 // Location options
 export const locationOptions = [
   'ห้องธุรการ',

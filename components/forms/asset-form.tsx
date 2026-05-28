@@ -32,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { assetFormSchema, type AssetFormValues } from '@/lib/validations';
-import { statusLabels, locationOptions, conditionLabels } from '@/constants/asset';
+import { statusLabels, locationOptions, conditionLabels, budgetTypeLabels } from '@/constants/asset';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -75,6 +75,7 @@ export function AssetForm({
       fiscalYear: '',
       mainSequenceNo: '',
       subItems: [],
+      budgetType: 'government-budget',
       ...defaultValues,
     },
   });
@@ -194,6 +195,30 @@ export function AssetForm({
                 <p className="text-sm font-medium text-destructive">{errors.mainSequenceNo.message}</p>
               )}
             </div>
+            <div>
+              <label>ประเภทงบประมาณ *</label>
+              <Controller
+                control={control}
+                name="budgetType"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกประเภทงบประมาณ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(budgetTypeLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.budgetType && (
+                <p className="text-sm font-medium text-destructive">{errors.budgetType.message}</p>
+              )}
+            </div>
           </section>
 
           {/* Location */}
@@ -276,7 +301,7 @@ export function AssetForm({
             />
           </div>
 
-          
+
 
           {/* Condition */}
           <div>

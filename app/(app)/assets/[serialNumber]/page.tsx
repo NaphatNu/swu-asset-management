@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Pencil, History, Info, Package, User } from 'lucide-react';
+import { ArrowLeft, Pencil, History, Info, Package, User, Wrench, ClipboardCheck, QrCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout';
 import { AssetForm } from '@/components/forms';
@@ -21,6 +21,7 @@ import { getAssetBySerialNumber, updateAsset } from '@/lib/api';
 import type { Asset } from '@/types/asset';
 import type { AssetFormValues } from '@/lib/validations';
 import { ConditionBadge, StatusBadge } from '@/components/badge/status-badge';
+import { budgetTypeLabels } from '@/constants/asset';
 
 /**
  * Helper สำหรับ Format วันที่และเวลาภาษาไทย
@@ -104,6 +105,7 @@ export default function AssetDetailPage() {
       setAsset(updated);
       setEditOpen(false);
       toast.success('บันทึกข้อมูลแล้ว');
+      await load();
     } catch {
       toast.error('บันทึกไม่สำเร็จ');
     } finally {
@@ -137,6 +139,9 @@ export default function AssetDetailPage() {
         <>
           <div className="flex gap-2">
             <Button onClick={() => setEditOpen(true)}><Pencil className="mr-2 size-4" /> แก้ไขข้อมูล</Button>
+            <Button variant="outline" asChild><Link href={`/inspection?serialNumber=${encodeURIComponent(asset?.serialNumber || '')}`}><ClipboardCheck className="mr-2 size-4" /> ประเมินครุภัณฑ์</Link></Button>
+            <Button variant="outline" asChild><Link href={`/repair?serialNumber=${encodeURIComponent(asset?.serialNumber || '')}`}><Wrench className="mr-2 size-4" /> แจ้งซ่อม</Link></Button>
+            <Button variant="outline" asChild><Link href={`/qr-generator?assetId=${asset.serialNumber}`}><QrCode className="mr-2 size-4" /> ดู QR Code</Link></Button>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -151,6 +156,7 @@ export default function AssetDetailPage() {
                 <DetailRow label="รหัสครุภัณฑ์ (SN)" value={asset.serialNumber} mono />
                 <DetailRow label="รหัสหลัก (Main SN)" value={asset.mainSerialNumber} mono />
                 <DetailRow label="ปีงบประมาณ" value={asset.fiscalYear ? `25${asset.fiscalYear}` : '—'} />
+                <DetailRow label='ประเภทงบประมาณ' value={asset.budgetType ? budgetTypeLabels[asset.budgetType] : '—'} />
                 <DetailRow label="ลำดับชุดหลัก (Main Seq)" value={asset.mainSequenceNo} mono />
                 <DetailRow label="สถานะ" value={<StatusBadge status={asset.status} />} />
                 <DetailRow 

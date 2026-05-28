@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ConditionBadge, StatusBadge } from '../badge/status-badge';
+import { BudgetTypeBadge, ConditionBadge, StatusBadge } from '../badge/status-badge';
 import { TableEmptyState } from '@/components/shared/table-empty-state';
 import { TableLoadingSkeleton } from '@/components/shared/table-loading-skeleton';
 import type { Asset } from '@/types/asset';
@@ -78,13 +78,12 @@ export function AssetTable({
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
               <TableHead>รายการครุภัณฑ์</TableHead>
-              <TableHead className="hidden lg:table-cell">ปีงบ</TableHead>
-              {/* <TableHead className="hidden lg:table-cell">ลำดับหลัก</TableHead>
-              <TableHead className="hidden xl:table-cell">ลำดับรายการ</TableHead>*/}
-              <TableHead className="hidden xl:table-cell">ชื่อรายการย่อย</TableHead> 
+              <TableHead className="hidden xl:table-cell">ชื่อรายการย่อย</TableHead>
               <TableHead>หมายเลขครุภัณฑ์ หลัก-ย่อย</TableHead>
               <TableHead className="hidden md:table-cell">หมายเลขเดิม</TableHead>
               <TableHead className="hidden lg:table-cell">สถานที่ตั้ง</TableHead>
+              <TableHead className="hidden lg:table-cell">ปีงบ</TableHead>
+              <TableHead className="hidden lg:table-cell">ประเภทงบประมาณ</TableHead>
               <TableHead>สถานะ</TableHead>
               <TableHead>สภาพ</TableHead>
               <TableHead className="w-[70px]"></TableHead>
@@ -99,17 +98,16 @@ export function AssetTable({
                   onClick={() => onView?.(asset)}
                 >
                   <TableCell className="font-medium min-w-[140px]">{asset.assetName}</TableCell>
-                  <TableCell className="hidden lg:table-cell text-sm">{asset.fiscalYear ?? '-'}</TableCell>
-                  {/* <TableCell className="hidden lg:table-cell text-sm">{asset.mainSequenceNo ?? '-'}</TableCell>
-                  <TableCell className="hidden xl:table-cell text-sm">{asset.itemSequenceNo ?? '-'}</TableCell>*/}
                   <TableCell className="hidden xl:table-cell text-sm max-w-[160px] truncate">
-                    {asset.itemSequenceName=="" ? '-' : asset.itemSequenceName}
-                  </TableCell> 
+                    {asset.itemSequenceName == "" ? '-' : asset.itemSequenceName}
+                  </TableCell>
                   <TableCell className="font-mono text-xs whitespace-nowrap">{asset.mainSerialNumber}</TableCell>
                   <TableCell className="hidden md:table-cell font-mono text-xs whitespace-nowrap">
                     {asset.serialNumber}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-sm">{asset.location}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-sm">{asset.fiscalYear ?? '-'}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-sm"><BudgetTypeBadge budgetType={asset.budgetType ?? '-'} /></TableCell>
                   <TableCell><StatusBadge status={asset.status} /></TableCell>
                   <TableCell><ConditionBadge condition={asset.condition} /></TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

@@ -38,6 +38,7 @@ import {
   statusLabels,
   locationOptions,
   conditionLabels,
+  budgetTypeLabels,
 } from '@/constants/asset';
 import type {
   AssetFilters as AssetFiltersType,
@@ -62,6 +63,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
     filters.location,
     filters.condition,
     filters.fiscalYear,
+    filters.budgetType,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -70,7 +72,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
   const fiscalYearSelect = (
     <Input
-      placeholder="ค้นหาปีงบประมาณ..."
+      placeholder="ค้นหาปีงบประมาณ"
       value={filters.fiscalYear || ''}
       onChange={(e) =>
         onFiltersChange({
@@ -78,7 +80,7 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
           fiscalYear: e.target.value || undefined,
         })
       }
-      className={isMobile ? 'w-full' : 'w-[130px]'}
+      className={isMobile ? 'w-full' : 'w-[135px]'}
     />
   );
 
@@ -158,14 +160,40 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
 
   const FilterContent = () => (
     <div className="space-y-4">
+
+      <div className="space-y-2 px-4 flex flex-col">
+        <label className="text-sm font-medium">สถานที่ตั้ง</label>
+        <LocationSearchSelect className="w-full" />
+      </div>
+
       <div className="space-y-2 px-4">
         <label className="text-sm font-medium">ปีงบประมาณ</label>
         {fiscalYearSelect}
       </div>
 
-      <div className="space-y-2 px-4 flex flex-col">
-        <label className="text-sm font-medium">สถานที่ตั้ง</label>
-        <LocationSearchSelect className="w-full" />
+      <div className="space-y-2 px-4">
+        <label className="text-sm font-medium">ประเภทงบประมาณ</label>
+        <Select
+          value={filters.budgetType || 'all'}
+          onValueChange={(value) =>
+            onFiltersChange({
+              ...filters,
+              budgetType: value === 'all' ? undefined : value,
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="ทั้งหมด" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">ทั้งหมด</SelectItem>
+            {Object.entries(budgetTypeLabels).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2 px-4">
@@ -278,10 +306,32 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
         </Sheet>
       ) : (
         <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
-          {fiscalYearSelect}
-          
-          {/* แทนที่ Select สถานที่เดิมด้วยคอมโพเนนต์ค้นหาตัวใหม่ */}
+
           <LocationSearchSelect className="w-[160px]" />
+
+          {fiscalYearSelect}
+
+          <Select
+            value={filters.budgetType || 'all'}
+            onValueChange={(value) =>
+              onFiltersChange({
+                ...filters,
+                budgetType: value === 'all' ? undefined : value,
+              })
+            }
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="ประเภทงบประมาณ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">งบทุกประเภท</SelectItem>
+              {Object.entries(budgetTypeLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select
             value={filters.status || 'all'}
@@ -326,6 +376,8 @@ export function AssetFilters({ filters, onFiltersChange }: AssetFiltersProps) {
               ))}
             </SelectContent>
           </Select>
+
+
 
           {activeFiltersCount > 0 && (
             <Button variant="ghost" size="icon" onClick={clearFilters} aria-label="ล้างตัวกรอง">

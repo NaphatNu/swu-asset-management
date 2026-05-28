@@ -91,7 +91,7 @@ export async function updateRepairStatus(
 ): Promise<RepairRequest> {
   const path = `/repairs/${encodeURIComponent(id)}/status`;
   try {
-    const { data } = await apiClient.patch<RepairRequest>(path, {
+    const { data } = await apiClient.put<RepairRequest>(path, {
       status, // ส่งค่า status ที่รับมาจากหน้าบ้านไปให้หลังบ้านได้โดยตรง
     });
     return data; // ส่งคืน data ตรง ๆ ไม่ต้องผ่านฟังก์ชันแปลงสถานะ

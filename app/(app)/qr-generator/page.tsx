@@ -20,11 +20,18 @@ import { toast } from 'sonner';
 import { QrLabelDisplay } from '@/components/qr/qr-label-display';
 import { getAssetBySerialNumber } from '@/lib/api';
 import type { Asset } from '@/types/asset';
+import { budgetTypeLabels } from '@/constants/asset';
+
+const getBudgetTypeNumber = (type?: string | null): string => {
+  if (type === 'government-budget') return '1';
+  if (type === 'income-budget') return '2';
+  return '-';
+};
 
 const sizeMap = {
-  small: 150,
-  medium: 200,
-  large: 300,
+  small: 200,
+  medium: 300,
+  large: 400,
 } as const;
 
 type PrintSize = keyof typeof sizeMap;
@@ -43,6 +50,7 @@ function QRGeneratorContent() {
   );
   const [printSize, setPrintSize] = useState<PrintSize>('medium');
   const [asset, setAsset] = useState<Asset | null>(null);
+  const [budgetType, setBudgetType] = useState<string | undefined>(undefined);
   
   // เพิ่ม State สำหรับจำว่ากำลังเลือก subItem ชิ้นไหนอยู่ (default เป็น 'none' คือไม่ใส่)
   const [selectedSubItemIdx, setSelectedSubItemIdx] = useState<string>('none');
@@ -64,7 +72,7 @@ function QRGeneratorContent() {
       setAsset(data);
       if (!fiscalYear && data.fiscalYear) setFiscalYear(data.fiscalYear);
       if (!mainSequenceNo && data.mainSequenceNo) setMainSequenceNo(data.mainSequenceNo);
-      
+      if (!budgetType && data.budgetType) setBudgetType(data.budgetType);
       // บังคับให้ชื่อรายการใช้ assetName ของตัวหลักเสมอ
       setItemSequenceName(data.assetName || '');
       
@@ -110,6 +118,7 @@ function QRGeneratorContent() {
     itemSequenceName: itemSequenceName || undefined,
     itemSequenceNo: itemSequenceNo ? Number(itemSequenceNo) : undefined,
     fullAssetCode: assetCode,
+    budgetType: getBudgetTypeNumber(budgetType),
   };
 
   const canPreview = Boolean(assetCode && serialPattern.test(assetCode));
@@ -143,7 +152,7 @@ function QRGeneratorContent() {
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
       ctx.font = '12px sans-serif';
-      const line1 = `ปี ${fiscalYear || '-'} (${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'})`;
+      const line1 = `ปี ${fiscalYear || '-'} (${getBudgetTypeNumber(budgetType) || '-'})(${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'})`;
       ctx.fillText(line1, canvas.width / 2, qrPixelSize + padding + 28, canvas.width - padding * 2);
 
       ctx.font = '11px monospace';
@@ -203,6 +212,25 @@ function QRGeneratorContent() {
                   onChange={(e) => setMainSequenceNo(e.target.value)}
                 />
               </div>
+
+              <div className="space-y-2">
+              <Label htmlFor="budgetType">ประเภทงบประมาณ</Label>
+              <Select
+                value={budgetType}
+                onValueChange={(v) => setBudgetType(v)}
+              >
+                <SelectTrigger id="budgetType">
+                  <SelectValue placeholder="เลือกประเภทงบประมาณ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(budgetTypeLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             </div>
 
             {/* ส่วนเลือกชิ้นส่วนย่อย: แสดง Select แบบปิดใช้งานเมื่อไม่มีข้อมูลย่อย */}
@@ -267,9 +295,9 @@ function QRGeneratorContent() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="small">เล็ก (150×150)</SelectItem>
-                  <SelectItem value="medium">กลาง (200×200)</SelectItem>
-                  <SelectItem value="large">ใหญ่ (300×300)</SelectItem>
+                  <SelectItem value="small">เล็ก (200×200)</SelectItem>
+                  <SelectItem value="medium">กลาง (300×300)</SelectItem>
+                  <SelectItem value="large">ใหญ่ (400×400)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -12,6 +12,7 @@ export type AssetCategory = 'computer' | 'furniture' | 'equipment' | 'vehicle' |
 export type RepairPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type Action = 'update-condition' | 'update-asset' | 'create-repair' | 'delete-asset' | 'delete-repair' | 'update-status-repair';
 export type LocationOption = typeof locationOptions[number];
+export type BudgetType = 'government-budget' | 'income-budget';
 
 export interface AssetSubItem {
   itemSequenceNo: number;
@@ -37,6 +38,7 @@ export interface Asset {
   itemSequenceNo?: number;
   itemSequenceName?: string;
   subItems?: AssetSubItem[];
+  budgetType?: BudgetType;
 }
 
 export interface GetAssetsResponse {
@@ -144,6 +146,7 @@ export interface AssetFilters {
   startDate?: string;
   /** @deprecated Use fiscalYear instead */
   endDate?: string;
+  budgetType?: string;
   page?: number;
   pageSize?: number;
 }

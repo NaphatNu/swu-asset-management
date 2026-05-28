@@ -7,6 +7,7 @@ export interface QrLabelData {
   mainSequenceNo?: string;
   itemSequenceName?: string;
   itemSequenceNo?: number | string;
+  budgetType?: number | string;
   fullAssetCode: string;
 }
 
@@ -21,7 +22,8 @@ export function formatQrLabelLine(data: QrLabelData): string {
   const mainSeq = data.mainSequenceNo ?? '-';
   const name = data.itemSequenceName ?? '-';
   const itemSeq = data.itemSequenceNo ?? '-';
-  return `ปี ${year} (${mainSeq}) ${name} (${itemSeq})`;
+  const budgetType = data.budgetType ?? '-';
+  return `ปี ${year} (${budgetType}) (${mainSeq}) ${name} (${itemSeq})`;
 }
 
 export function QrLabelDisplay({ data, className, printMode }: QrLabelDisplayProps) {

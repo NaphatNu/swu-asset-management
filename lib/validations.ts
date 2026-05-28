@@ -36,6 +36,9 @@ export const assetFormSchema = z.object({
   // itemSequenceNo: z.coerce.number().int().min(1, 'กรุณาระบุลำดับรายการ'),
   // itemSequenceName: z.string().min(1, 'กรุณาระบุชื่อรายการ'),
   subItems: z.array(assetSubItemSchema).optional(),
+  budgetType: z.enum(['government-budget', 'income-budget'], {
+    errorMap: () => ({ message: 'กรุณาเลือกประเภทงบประมาณ' }),
+  }).optional(),
 
 
 });

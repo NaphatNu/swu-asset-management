@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Action, AssetCondition, AssetStatus, RepairPriority, RepairStatus, RepairType } from '@/types/asset';
-import { statusLabels, priorityLabels, repairStatusLabels, conditionLabels, repairTypeLabels, actionLabels } from '@/constants/asset';
+import { statusLabels, priorityLabels, repairStatusLabels, conditionLabels, repairTypeLabels, actionLabels, budgetTypeLabels } from '@/constants/asset';
 
 interface StatusBadgeProps {
   status: AssetStatus;
@@ -24,6 +24,27 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       className={cn('font-medium', statusStyles[status], className)}
     >
       {statusLabels[status]}
+    </Badge>
+  );
+}
+
+interface BudgetTypeBadgeProps {
+  budgetType: string;
+  className?: string;
+}
+
+const budgetTypeStyles: Record<string, string> = {
+  'government-budget': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20',
+  'income-budget': 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20',
+};
+
+export function BudgetTypeBadge({ budgetType, className }: BudgetTypeBadgeProps) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn('font-medium', budgetTypeStyles[budgetType] ?? 'bg-muted text-muted-foreground border-muted', className)}
+    >
+      {budgetTypeLabels[budgetType]}
     </Badge>
   );
 }

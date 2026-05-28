@@ -74,6 +74,7 @@ export default function AssetsPage() {
       mainSequenceNo: asset.mainSequenceNo ?? '',
       itemSequenceName: asset.itemSequenceName ?? '',
       itemSequenceNo: String(asset.itemSequenceNo ?? ''),
+      budgetType: asset.budgetType ?? '',
     });
     router.push(`/qr-generator?${params.toString()}`);
   };
