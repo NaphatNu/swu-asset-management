@@ -4,11 +4,9 @@ import { getSession } from 'next-auth/react';
 const DEFAULT_TIMEOUT_MS = 10000;
 
 export const apiClient = axios.create({
-  baseURL: process.env.API_BASE_URL || '/api',
+  baseURL: '/api',
   timeout: DEFAULT_TIMEOUT_MS,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: {},
 });
 
 apiClient.interceptors.request.use(async (config) => {
