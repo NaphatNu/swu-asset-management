@@ -14,7 +14,6 @@ export interface QrLabelData {
 interface QrLabelDisplayProps {
   data: QrLabelData;
   className?: string;
-  printMode?: boolean;
 }
 
 export function formatQrLabelLine(data: QrLabelData): string {
@@ -26,31 +25,24 @@ export function formatQrLabelLine(data: QrLabelData): string {
   return `ปี ${year} (${budgetType}) (${mainSeq}) ${name} (${itemSeq})`;
 }
 
-export function QrLabelDisplay({ data, className, printMode }: QrLabelDisplayProps) {
+export function QrLabelDisplay({ data, className }: QrLabelDisplayProps) {
   const Wrapper = 'div' as const;
 
   return (
     <Wrapper
       className={cn(
-        'w-full max-w-full text-center space-y-1 px-2',
-        printMode && 'print:text-black print:break-inside-avoid',
+        // ใช้ flex เพื่อคุมระยะห่างให้แม่นยำ
+        'w-full max-w-full text-center flex flex-col items-center print:text-black print:break-inside-avoid',
         className
       )}
     >
-      <p
-        className={cn(
-          'font-medium leading-snug break-words',
-          printMode ? 'text-xs' : 'text-sm'
-        )}
-      >
+      {/* บรรทัดที่ 1: ขนาด 24px สีดำ */}
+      <p className="font-sans text-[22px] leading-[22px] text-black break-words w-full">
         {formatQrLabelLine(data)}
       </p>
-      <p
-        className={cn(
-          'font-mono break-all leading-tight text-muted-foreground',
-          printMode ? 'text-[10px] text-black' : 'text-xs'
-        )}
-      >
+      
+      {/* บรรทัดที่ 2: ขนาด 24px สีดำ ห่างจากด้านบน 8px */}
+      <p className="font-mono text-[22px] leading-[22px] text-black break-all mt-[8px] w-full">
         {data.fullAssetCode}
       </p>
     </Wrapper>

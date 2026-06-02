@@ -28,13 +28,13 @@ const getBudgetTypeNumber = (type?: string | null): string => {
   return '-';
 };
 
-const sizeMap = {
-  small: 200,
-  medium: 300,
-  large: 400,
-} as const;
+// const sizeMap = {
+//   small: 200,
+//   medium: 300,
+//   large: 400,
+// } as const;
 
-type PrintSize = keyof typeof sizeMap;
+// type PrintSize = keyof typeof sizeMap;
 
 function QRGeneratorContent() {
   const searchParams = useSearchParams();
@@ -48,13 +48,13 @@ function QRGeneratorContent() {
   const [itemSequenceNo, setItemSequenceNo] = useState(
     searchParams.get('itemSequenceNo') || ''
   );
-  const [printSize, setPrintSize] = useState<PrintSize>('medium');
+  // const [printSize, setPrintSize] = useState<PrintSize>('medium');
   const [asset, setAsset] = useState<Asset | null>(null);
   const [budgetType, setBudgetType] = useState<string | undefined>(undefined);
-  
+
   // เพิ่ม State สำหรับจำว่ากำลังเลือก subItem ชิ้นไหนอยู่ (default เป็น 'none' คือไม่ใส่)
   const [selectedSubItemIdx, setSelectedSubItemIdx] = useState<string>('none');
-  
+
   const qrRef = useRef<HTMLDivElement>(null);
 
   const serialPattern = /^\d{3}-\d{16}-\d{1}-\d{2}$/;
@@ -75,7 +75,7 @@ function QRGeneratorContent() {
       if (!budgetType && data.budgetType) setBudgetType(data.budgetType);
       // บังคับให้ชื่อรายการใช้ assetName ของตัวหลักเสมอ
       setItemSequenceName(data.assetName || '');
-      
+
       // ตรวจสอบเงื่อนไขกรณีมีชิ้นส่วนย่อย (Sub Items)
       if (data.subItems && data.subItems.length > 0) {
         setSelectedSubItemIdx('none');
@@ -96,7 +96,7 @@ function QRGeneratorContent() {
   // ฟังก์ชันจัดการตอนเปลี่ยนการเลือกชิ้นส่วนย่อย
   const handleSubItemChange = (value: string) => {
     setSelectedSubItemIdx(value);
-    
+
     if (value === 'none' || !asset?.subItems) {
       // ใช้ชื่อ assetName ของตัวหลักเสมอ และเคลียร์ลำดับรายการย่อย
       setItemSequenceName(asset?.assetName || '');
@@ -131,11 +131,25 @@ function QRGeneratorContent() {
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const qrPixelSize = sizeMap[printSize];
-    const padding = 24;
-    const labelHeight = 72;
-    canvas.width = qrPixelSize + padding * 2;
-    canvas.height = qrPixelSize + labelHeight + padding * 2;
+
+    const canvasSize = 400;
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    
+    // ตั้งค่าตัวแปรตามที่คุณกำหนด
+    const padding = 16;
+    const fontSize = 22;
+    const gapAfterQr = 16;
+    const gapLineToLine = 8;
+
+    const textBlockHeight = fontSize + gapLineToLine + fontSize + gapAfterQr;
+
+    const qrSize = canvasSize - (padding * 2) - textBlockHeight;
+
+    const qrX = Math.floor((canvasSize - qrSize) / 2);
+    const qrY = padding; 
+
+    const qrBottom = qrY + qrSize; 
 
     const img = new Image();
     const svgData = new XMLSerializer().serializeToString(svg);
@@ -147,19 +161,27 @@ function QRGeneratorContent() {
 
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, padding, padding, qrPixelSize, qrPixelSize);
+      ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
 
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
-      ctx.font = '12px sans-serif';
-      const line1 = `ปี ${fiscalYear || '-'} (${getBudgetTypeNumber(budgetType) || '-'})(${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'})`;
-      ctx.fillText(line1, canvas.width / 2, qrPixelSize + padding + 28, canvas.width - padding * 2);
+      ctx.textBaseline = 'top'; 
 
-      ctx.font = '11px monospace';
-      ctx.fillText(assetCode, canvas.width / 2, qrPixelSize + padding + 52);
+      // --- บรรทัดที่ 1 ---
+      ctx.font = `${fontSize}px sans-serif`;
+      const line1 = `ปี ${fiscalYear || '-'} (${getBudgetTypeNumber(budgetType) || '-'})(${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'})`;
+      
+      const text1Y = qrBottom + gapAfterQr;
+      ctx.fillText(line1, canvasSize / 2, text1Y, canvasSize - (padding * 2));
+
+      // --- บรรทัดที่ 2 ---
+      ctx.font = `${fontSize}px monospace`;
+      
+      const text2Y = text1Y + fontSize + gapLineToLine;
+      ctx.fillText(assetCode, canvasSize / 2, text2Y);
 
       const link = document.createElement('a');
-      link.download = `qr-${assetCode}.png`;
+      link.download = `${fiscalYear || '-'} (${getBudgetTypeNumber(budgetType) || '-'})(${mainSequenceNo || '-'}) ${itemSequenceName || '-'} (${itemSequenceNo || '-'}).png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       URL.revokeObjectURL(svgUrl);
@@ -214,23 +236,23 @@ function QRGeneratorContent() {
               </div>
 
               <div className="space-y-2">
-              <Label htmlFor="budgetType">ประเภทงบประมาณ</Label>
-              <Select
-                value={budgetType}
-                onValueChange={(v) => setBudgetType(v)}
-              >
-                <SelectTrigger id="budgetType">
-                  <SelectValue placeholder="เลือกประเภทงบประมาณ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(budgetTypeLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <Label htmlFor="budgetType">ประเภทงบประมาณ</Label>
+                <Select
+                  value={budgetType}
+                  onValueChange={(v) => setBudgetType(v)}
+                >
+                  <SelectTrigger id="budgetType">
+                    <SelectValue placeholder="เลือกประเภทงบประมาณ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(budgetTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* ส่วนเลือกชิ้นส่วนย่อย: แสดง Select แบบปิดใช้งานเมื่อไม่มีข้อมูลย่อย */}
@@ -285,7 +307,7 @@ function QRGeneratorContent() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>ขนาดพิมพ์ (print_size)</Label>
               <Select
                 value={printSize}
@@ -300,7 +322,7 @@ function QRGeneratorContent() {
                   <SelectItem value="large">ใหญ่ (400×400)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             {!canPreview && assetCode && (
               <p className="text-sm text-destructive">
@@ -324,13 +346,13 @@ function QRGeneratorContent() {
                   >
                     <QRCodeSVG
                       value={`https://assets.swu.ac.th/${assetCode}`}
-                      size={sizeMap[printSize]}
+                      size={400}
                       level="H"
                       includeMargin={false}
                       fgColor="#000000"
                       bgColor="#ffffff"
                     />
-                    <QrLabelDisplay data={labelData} printMode className="max-w-full" />
+                    <QrLabelDisplay data={labelData} className="max-w-full" />
                   </div>
 
                   <Button
