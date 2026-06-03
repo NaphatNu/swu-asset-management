@@ -124,6 +124,7 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
             // ถ้าเลือก "ไม่ใส่" ให้ล้างค่าลำดับและชื่อชิ้นส่วนย่อยใน Form
             setValue('itemSequenceNo', undefined);
             setValue('itemSequenceName', undefined);
+            // อย่าเปลี่ยน assetId - ให้เป็นครุภัณฑ์หลัก
         } else {
             // ถ้าเลือกชิ้นส่วน ให้ดึงข้อมูลชิ้นนั้นไปฝังในฟอร์มสำหรับการ Submit
             const idx = Number(value);
@@ -131,6 +132,8 @@ export function InspectionForm({ defaultSerialNumber, onSubmit, isSubmitting }: 
             if (targetItem) {
                 setValue('itemSequenceNo', targetItem.itemSequenceNo);
                 setValue('itemSequenceName', targetItem.itemSequenceName);
+                // เปลี่ยน assetId เป็น subItem id
+                setValue('assetId', targetItem.id.toString());
             }
         }
     };

@@ -68,8 +68,6 @@ export function AssetForm({
       serialNumber: '',
       assetName: '',
       location: '',
-      status: 'available',
-      condition: 'normal',
       ownerName: '',
       acquiredDate: '',
       fiscalYear: '',
@@ -279,7 +277,7 @@ export function AssetForm({
           </div>
 
           {/* Status */}
-          <div>
+          {/* <div>
             <label>สถานะ *</label>
             <Controller
               control={control}
@@ -299,12 +297,12 @@ export function AssetForm({
                 </Select>
               )}
             />
-          </div>
+          </div> */}
 
 
 
           {/* Condition */}
-          <div>
+          {/* <div>
             <label>สภาพ *</label>
             <Controller
               control={control}
@@ -324,7 +322,7 @@ export function AssetForm({
                 </Select>
               )}
             />
-          </div>
+          </div> */}
 
         </CardContent>
       </Card>
@@ -338,8 +336,11 @@ export function AssetForm({
             size="sm"
             onClick={() =>
               appendSubItem({
+                id: 0,
                 itemSequenceNo: subItemFields.length + 1,
                 itemSequenceName: '',
+                status: 'available',
+                condition: 'normal',
               })
             }
           >
@@ -351,32 +352,128 @@ export function AssetForm({
           {subItemFields.length === 0 ? (
             <p className="text-sm text-muted-foreground">ยังไม่มีรายการย่อย (ไม่บังคับ)</p>
           ) : (
-            subItemFields.map((field, index) => (
-              <div key={field.id} className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-end">
-                <div className="flex-1">
-                  <label>ลำดับรายการย่อย *</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    {...register(`subItems.${index}.itemSequenceNo` as const)}
-                  />
+            <>
+              {/* Bulk Update Controls */}
+              <div className="flex gap-2 p-3 bg-muted/50 rounded-lg border flex-wrap">
+                <div className="flex gap-2 items-center flex-1 min-w-[300px]">
+                  <span className="text-sm font-medium text-muted-foreground">อัปเดตทั้งหมด:</span>
+                  <Select
+                    onValueChange={(value) => {
+                      subItemFields.forEach((_, idx) => {
+                        setValue(`subItems.${idx}.status` as const, value as any);
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-[140px]">
+                      <SelectValue placeholder="สถานะ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <fieldset className="min-w-0 flex-[2] border-0 p-0 m-0">
-                  <label>ชื่อรายการย่อย *</label>
-                  <Input {...register(`subItems.${index}.itemSequenceName` as const)} />
-                </fieldset>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive shrink-0"
-                  onClick={() => removeSubItem(index)}
-                  aria-label="ลบรายการย่อย"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                <div className="flex gap-2 items-center flex-1 min-w-[300px]">
+                  <span className="text-sm font-medium text-muted-foreground">สภาพ:</span>
+                  <Select
+                    onValueChange={(value) => {
+                      subItemFields.forEach((_, idx) => {
+                        setValue(`subItems.${idx}.condition` as const, value as any);
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-[140px]">
+                      <SelectValue placeholder="สภาพ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(conditionLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            ))
+
+              {/* Individual SubItems */}
+              {subItemFields.map((field, index) => (
+                <div key={field.id} className="flex flex-col gap-3 rounded-lg border p-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="text-sm">ลำดับรายการย่อย *</label>
+                      <Input
+                        type="number"
+                        min={1}
+                        {...register(`subItems.${index}.itemSequenceNo` as const)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm">ชื่อรายการย่อย *</label>
+                      <Input {...register(`subItems.${index}.itemSequenceName` as const)} />
+                    </div>
+                    <div>
+                      <label className="text-sm">สถานะ *</label>
+                      <Controller
+                        control={control}
+                        name={`subItems.${index}.status` as const}
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกสถานะ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(statusLabels).map(([key, label]) => (
+                                <SelectItem key={key} value={key}>
+                                  {label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm">สภาพ *</label>
+                      <Controller
+                        control={control}
+                        name={`subItems.${index}.condition` as const}
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกสภาพ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(conditionLabels).map(([key, label]) => (
+                                <SelectItem key={key} value={key}>
+                                  {label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => removeSubItem(index)}
+                      aria-label="ลบรายการย่อย"
+                    >
+                      <Trash2 className="mr-1 size-4" />
+                      ลบ
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </>
           )}
         </CardContent>
       </Card>

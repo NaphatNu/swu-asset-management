@@ -8,22 +8,21 @@ import {
   deleteMockAssetById,
 } from '@/mocks/mock-store';
 import type { AssetFormValues } from '@/lib/validations';
-import type { Asset, AssetFilters, GetAssetsLogsResponse, GetAssetsResponse } from '@/types/asset';
+import type { Asset, AssetCondition, AssetFilters, AssetStatus, GetAssetsLogsResponse, GetAssetsResponse } from '@/types/asset';
 
 interface CreateAssetBackendPayload {
   mainSerialNumber: string;
   serialNumber: string;
   assetName: string;
   location: string;
-  status: Asset['status'];
-  condition: Asset['condition'];
   ownerName: string;
   acquiredDate: string;
   fiscalYear?: string;
   mainSequenceNo?: string;
   itemSequenceNo?: number;
   itemSequenceName?: string;
-  subItems?: { itemSequenceNo: number; itemSequenceName: string }[];
+  subItems?: { id?: number; itemSequenceNo: number; itemSequenceName: string; status?: AssetStatus; condition?: AssetCondition }[];
+  budgetType?: Asset['budgetType'];
 }
 
 function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAssetBackendPayload {
@@ -32,13 +31,12 @@ function mapAssetFormValuesToBackendPayload(values: AssetFormValues): CreateAsse
     serialNumber: values.serialNumber,
     assetName: values.assetName,
     location: values.location ?? '',
-    status: values.status,
-    condition: values.condition ?? 'normal',
     ownerName: values.ownerName ?? '',
     acquiredDate: values.acquiredDate ?? '',
     fiscalYear: values.fiscalYear,
     mainSequenceNo: values.mainSequenceNo,
     subItems: values.subItems,
+    budgetType: values.budgetType,
   };
 }
 
@@ -109,7 +107,6 @@ export async function updateAsset(
         serialNumber: asset?.serialNumber || serialNumber,
         assetName: payload.assetName,
         location: payload.location || asset?.location || '',
-        status: payload.status,
         ownerName: asset?.ownerName || '',
         acquiredDate: asset?.acquiredDate || '',
       });
@@ -136,7 +133,6 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
         mainSerialNumber: payload.mainSerialNumber,
         serialNumber: payload.serialNumber,
         assetName: payload.assetName,
-        status: payload.status,
         ownerName: payload.ownerName,
         location: payload.location,
         acquiredDate: payload.acquiredDate,

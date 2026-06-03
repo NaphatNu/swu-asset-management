@@ -15,8 +15,11 @@ export type LocationOption = typeof locationOptions[number];
 export type BudgetType = 'government-budget' | 'income-budget';
 
 export interface AssetSubItem {
+  id: number;
   itemSequenceNo: number;
   itemSequenceName: string;
+  status: AssetStatus;
+  condition: AssetCondition;
 }
 
 export interface Asset {
@@ -25,8 +28,6 @@ export interface Asset {
   serialNumber: string;
   assetName: string;
   location: string;
-  status: AssetStatus;
-  condition: AssetCondition;
   ownerName: string;
   acquiredDate: string;
   updatedByName: string;
@@ -71,6 +72,7 @@ export interface RepairRequest {
   assetId: string;
   serialNumber: string;
   assetName: string;
+  itemSequenceName?: string;
   description: string;
   status: RepairStatus;
   type: RepairType;

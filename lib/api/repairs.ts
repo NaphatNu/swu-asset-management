@@ -9,7 +9,7 @@ import {
 import type { GetRepairResponse, RepairRequest, RepairStatus } from '@/types/asset';
 
 export interface CreateRepairPayload {
-  assetId: string;
+  assetId: string | number;
   description: string;
   status?: RepairRequest['status'];
   type?: RepairRequest['type'];
@@ -42,9 +42,9 @@ export async function getRepairRequests(filters?: RepairListFilters): Promise<Ge
 export async function createRepairRequest(payload: CreateRepairPayload): Promise<RepairRequest> {
   console.log('[API][REPAIRS] createRepairRequest called', { payload });
   const backendPayload = {
-    assetId: payload.assetId,
+    assetId: String(payload.assetId),
     description: payload.description,
-    status: payload.status || 'pending', // ใช้ค่าตรง ๆ ได้เลย ถ้าไม่มีให้เป็น 'pending'
+    status: payload.status || 'open',
     type: payload.type || 'internal-repair',
   };
   try {
@@ -53,7 +53,7 @@ export async function createRepairRequest(payload: CreateRepairPayload): Promise
       id: data.id,
       assetId: data.assetId,
     });
-    return data; // ส่งคืน data ตรง ๆ ไม่ต้องผ่านฟังก์ชันแปลงสถานะ
+    return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][REPAIRS] createRepairRequest fallback to mock data');

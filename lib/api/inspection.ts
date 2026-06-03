@@ -5,7 +5,7 @@ import type { InspectionFormValues } from '@/lib/validations';
 import type { Asset,} from '@/types/asset';
 
 interface CreateInspectionBackendPayload {
-  assetId: string;
+  assetId: string | number;
   condition: string;
   note?: string;
   updateStatus: boolean;
@@ -30,7 +30,7 @@ export async function createInspection(values: InspectionFormValues): Promise<As
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.warn('[API][INSPECTIONS] createInspection fallback to mock data');
-      const fallbackData = getMockAssetBySerialNumber(payload.assetId);
+      const fallbackData = getMockAssetBySerialNumber(String(payload.assetId));
       if (!fallbackData) {
         throw error;
       }

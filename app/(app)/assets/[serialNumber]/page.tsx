@@ -56,8 +56,8 @@ function assetToFormValues(asset: Asset): AssetFormValues {
     ownerName: asset.ownerName,
     acquiredDate: asset.acquiredDate,
     location: asset.location,
-    status: asset.status,
-    condition: asset.condition,
+    // status: asset.status,
+    // condition: asset.condition,
     fiscalYear: asset.fiscalYear ?? '',
     mainSequenceNo: asset.mainSequenceNo ?? '',
     subItems: asset.subItems ?? [],
@@ -158,11 +158,6 @@ export default function AssetDetailPage() {
                 <DetailRow label="ปีงบประมาณ" value={asset.fiscalYear ? `25${asset.fiscalYear}` : '—'} />
                 <DetailRow label='ประเภทงบประมาณ' value={asset.budgetType ? budgetTypeLabels[asset.budgetType] : '—'} />
                 <DetailRow label="ลำดับชุดหลัก (Main Seq)" value={asset.mainSequenceNo} mono />
-                <DetailRow label="สถานะ" value={<StatusBadge status={asset.status} />} />
-                <DetailRow 
-                  label="สภาพเครื่อง" 
-                  value={<ConditionBadge condition={asset.condition} />}
-                />
               </CardContent>
             </Card>
 
@@ -189,18 +184,28 @@ export default function AssetDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                  <div className="space-y-2">
                     {asset.subItems.map((item, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/60 text-sm hover:bg-muted/70 transition-colors"
+                        className="p-3 bg-muted/40 rounded-lg border border-border/60 text-sm hover:bg-muted/70 transition-colors"
                       >
-                        <span className="text-xs text-muted-foreground font-medium bg-background px-2 py-0.5 rounded border">
-                          ลำดับที่ {item.itemSequenceNo}
-                        </span>
-                        <span className="font-semibold text-foreground text-right">
-                          {item.itemSequenceName || '—'}
-                        </span>
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-medium bg-background px-2 py-0.5 rounded border">
+                              ลำดับที่ {item.itemSequenceNo}
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              {item.itemSequenceName || '—'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-medium text-muted-foreground">สถานะ:</span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">{item.status}</span>
+                          <span className="text-xs font-medium text-muted-foreground">สภาพ:</span>
+                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">{item.condition}</span>
+                        </div>
                       </div>
                     ))}
                   </div>

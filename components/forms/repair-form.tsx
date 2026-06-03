@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 import { repairFormSchema, type RepairFormValues } from '@/lib/validations';
-import { repairStatusLabels } from '@/constants/asset';
+import { repairStatusLabels, repairTypeLabels } from '@/constants/asset';
 import { getAssetBySerialNumber } from '@/lib/api';
 import type { Asset } from '@/types/asset';
 
@@ -140,6 +140,7 @@ export function RepairForm({
       // แจ้งซ่อมภาพรวมของทั้งชุดครุภัณฑ์
       setValue('itemSequenceNo', undefined);
       setValue('itemSequenceName', undefined);
+      // อย่าเปลี่ยน assetId - ให้เป็นครุภัณฑ์หลัก
     } else {
       // ดึงข้อมูลลึกชิ้นส่วนย่อยนั้นไปหยอดเข้า Form state เพื่อส่งออก
       const idx = Number(value);
@@ -147,6 +148,8 @@ export function RepairForm({
       if (targetItem) {
         setValue('itemSequenceNo', targetItem.itemSequenceNo);
         setValue('itemSequenceName', targetItem.itemSequenceName);
+        // เปลี่ยน assetId เป็น subItem id
+        setValue('assetId', targetItem.id.toString());
       }
     }
   };
@@ -254,7 +257,7 @@ export function RepairForm({
               control={control}
               name="repairStatus"
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={true}>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกสถานะ" />
                   </SelectTrigger>
@@ -268,6 +271,30 @@ export function RepairForm({
             />
             {errors.repairStatus && (
               <p className="text-sm font-medium text-destructive">{errors.repairStatus.message}</p>
+            )}
+          </div>
+
+          {/* Field: ประเภทการซ่อม */}
+          <div className="space-y-2">
+            <Label>ประเภทการซ่อม *</Label>
+            <Controller
+              control={control}
+              name="repairType"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภท" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(repairTypeLabels || {}).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.repairType && (
+              <p className="text-sm font-medium text-destructive">{errors.repairType.message}</p>
             )}
           </div>
 

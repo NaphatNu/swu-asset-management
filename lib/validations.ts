@@ -3,8 +3,11 @@ import { it } from 'node:test';
 import { z } from 'zod';
 
 export const assetSubItemSchema = z.object({
+  id: z.number().int().optional(),
   itemSequenceNo: z.coerce.number().int().min(1, 'กรุณาระบุลำดับย่อย'),
   itemSequenceName: z.string().min(1, 'กรุณาระบุชื่อรายการย่อย'),
+  status: z.enum(['available', 'in-use', 'under-repair', 'lost', 'pending-disposal', 'disposed']),
+  condition: z.enum(['normal', 'minor-damage', 'major-damage', 'critical']),
 });
 
 export const assetFormSchema = z.object({
@@ -24,17 +27,15 @@ export const assetFormSchema = z.object({
   fiscalYear: z.string().regex(/^\d{2}$/, 'ปีงบประมาณต้องเป็นตัวเลข 2 หลักเท่านั้น'),
   location: z.string().optional(),
 
-  status: z.enum(['available', 'in-use', 'under-repair', 'lost', 'pending-disposal', 'disposed'], {
-    errorMap: () => ({ message: 'กรุณาเลือกสถานะ' }),
-  }),
-  condition: z.enum(['normal', 'minor-damage', 'major-damage', 'critical'], {
-    errorMap: () => ({ message: 'กรุณาเลือกสภาพ' }),
-  }).optional(),
+  // status: z.enum(['available', 'in-use', 'under-repair', 'lost', 'pending-disposal', 'disposed'], {
+  //   errorMap: () => ({ message: 'กรุณาเลือกสถานะ' }),
+  // }),
+  // condition: z.enum(['normal', 'minor-damage', 'major-damage', 'critical'], {
+  //   errorMap: () => ({ message: 'กรุณาเลือกสภาพ' }),
+  // }).optional(),
   ownerName: z.string().optional(),
   acquiredDate: z.string().optional(),
   mainSequenceNo: z.string().min(1, 'กรุณาระบุลำดับหลัก'),
-  // itemSequenceNo: z.coerce.number().int().min(1, 'กรุณาระบุลำดับรายการ'),
-  // itemSequenceName: z.string().min(1, 'กรุณาระบุชื่อรายการ'),
   subItems: z.array(assetSubItemSchema).optional(),
   budgetType: z.enum(['government-budget', 'income-budget'], {
     errorMap: () => ({ message: 'กรุณาเลือกประเภทงบประมาณ' }),
@@ -77,6 +78,7 @@ export const repairFormSchema = z.object({
     .min(5, 'กรุณาอธิบายปัญหาอย่างน้อย 5 ตัวอักษร')
     .max(1000, 'คำอธิบายต้องไม่เกิน 1000 ตัวอักษร'),
   repairStatus: z.enum(['open', 'in-progress', 'completed']),
+  repairType: z.enum(['internal-repair', 'external-repair']),
   type: z.enum(['internal-repair', 'external-repair']),
   mainSequenceNo: z.string().optional().nullable(),
   itemSequenceNo: z.number().int().optional().nullable(),

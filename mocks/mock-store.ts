@@ -26,7 +26,6 @@ export function updateMockAssetBySerialNumber(
     | 'mainSerialNumber'
     | 'serialNumber'
     | 'assetName'
-    | 'status'
     | 'ownerName'
     | 'location'
     | 'acquiredDate'
@@ -56,9 +55,7 @@ export function listMockAssets(filters?: AssetFilters): GetAssetsResponse {
       if (!matched) return false;
     }
 
-    if (filters.status && asset.status !== filters.status) return false;
     if (filters.location && asset.location !== filters.location) return false;
-    if (filters.condition && asset.condition !== filters.condition) return false;
     if (filters.fiscalYear && asset.fiscalYear !== filters.fiscalYear) return false;
     return true;
   });
@@ -71,7 +68,6 @@ export function createMockAsset(
     | 'mainSerialNumber'
     | 'serialNumber'
     | 'assetName'
-    | 'status'
     | 'ownerName'
     | 'location'
     | 'acquiredDate'
@@ -83,17 +79,12 @@ export function createMockAsset(
     ...data,
     createdAt: now,
     updatedAt: now,
-    condition: 'normal',
     updatedByName: 'mock-user',
     createdByName: 'mock-user',
   };
 
   assetsStore.unshift(newAsset);
   dashboardStatsStore.total += 1;
-  if (newAsset.status === 'available') dashboardStatsStore.available += 1;
-  if (newAsset.status === 'under-repair') dashboardStatsStore.underRepair += 1;
-  if (newAsset.status === 'pending-disposal') dashboardStatsStore.pendingDisposal += 1;
-
   return newAsset;
 }
 

@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { RepairStatusBadge } from '@/components/badge/status-badge';
+import { RepairStatusBadge, RepairTypeBadge } from '@/components/badge/status-badge';
 import { TableEmptyState } from '@/components/shared/table-empty-state';
 import { TableLoadingSkeleton } from '@/components/shared/table-loading-skeleton';
 import type { RepairRequest } from '@/types/asset';
@@ -98,14 +98,21 @@ export function RepairTable({
                     {request.serialNumber}
                   </p>
                   <h4 className="font-medium text-sm line-clamp-1">{request.assetName}</h4>
+                  {request.itemSequenceName && (
+                    <p className="text-xs text-muted-foreground">ชิ้นส่วน: {request.itemSequenceName}</p>
+                  )}
                 </div>
                 <RepairStatusBadge status={request.status} />
               </div>
               <p className="text-sm text-muted-foreground line-clamp-2 bg-muted/50 p-2 rounded">
                 {request.description || 'ไม่มีรายละเอียด'}
               </p>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>ประเภท: {request.type === 'internal-repair' ? 'ซ่อมภายใน' : 'ซ่อมภายนอก'}</p>
+                <p>ผู้แจ้ง: {request.reportedByName}</p>
+                <p>วันที่: {new Date(request.createdAt).toLocaleDateString('th-TH')}</p>
+              </div>
               <div className="flex items-center justify-between gap-2 pt-2 border-t">
-                <span className="text-xs text-muted-foreground">{request.reportedByName}</span>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" onClick={() => onUpdateStatus?.(request)}>
                     สถานะ
@@ -131,9 +138,12 @@ export function RepairTable({
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[150px]">หมายเลขครุภัณฑ์</TableHead>
-              <TableHead className="w-[200px]">รายการ</TableHead>
+              <TableHead className="w-[180px]">รายการครุภัณฑ์</TableHead>
+              <TableHead className="w-[120px]">ชื่อรายการย่อย</TableHead>
               <TableHead>รายละเอียดการซ่อม</TableHead>
-              <TableHead className="w-[120px]">สถานะ</TableHead>
+              <TableHead className="w-[100px]">ประเภท</TableHead>
+              <TableHead className="w-[100px]">สถานะ</TableHead>
+              <TableHead className="w-[130px]">ผู้แจ้ง</TableHead>
               <TableHead className="w-[120px]">วันที่แจ้ง</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -142,7 +152,10 @@ export function RepairTable({
             {data.map((request) => (
               <TableRow key={request.id}>
                 <TableCell className="font-mono text-xs">{request.serialNumber}</TableCell>
-                <TableCell className="font-medium">{request.assetName}</TableCell>
+                <TableCell className="font-medium text-sm">{request.assetName}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {request.itemSequenceName || '-'}
+                </TableCell>
                 <TableCell>
                   <span
                     className="text-sm line-clamp-1 text-muted-foreground"
@@ -151,8 +164,14 @@ export function RepairTable({
                     {request.description || '-'}
                   </span>
                 </TableCell>
+                <TableCell className="text-xs">
+                  <RepairTypeBadge type={request.type} />
+                </TableCell>
                 <TableCell>
                   <RepairStatusBadge status={request.status} />
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {request.reportedByName}
                 </TableCell>
                 <TableCell className="text-sm">
                   {new Date(request.createdAt).toLocaleDateString('th-TH')}
