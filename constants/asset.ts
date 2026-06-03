@@ -65,7 +65,6 @@ export const budgetTypeLabels: Record<string, string> = {
 
 // Location options
 export const locationOptions = [
-  'ห้องธุรการ',
   'ห้อง G601',
   'ห้อง G602',
   'ห้อง G603',
