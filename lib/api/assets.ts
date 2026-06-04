@@ -135,6 +135,8 @@ export async function createAsset(values: AssetFormValues): Promise<Asset> {
         assetName: payload.assetName,
         ownerName: payload.ownerName,
         location: payload.location,
+        status: 'available',
+        condition: 'normal',
         acquiredDate: payload.acquiredDate,
       });
       console.log('[API][ASSETS] mock create result', {

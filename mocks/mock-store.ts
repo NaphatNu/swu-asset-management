@@ -68,6 +68,8 @@ export function createMockAsset(
     | 'mainSerialNumber'
     | 'serialNumber'
     | 'assetName'
+    | 'status'
+    | 'condition'
     | 'ownerName'
     | 'location'
     | 'acquiredDate'
@@ -81,6 +83,8 @@ export function createMockAsset(
     updatedAt: now,
     updatedByName: 'mock-user',
     createdByName: 'mock-user',
+    status: 'available',
+    condition: 'normal',
   };
 
   assetsStore.unshift(newAsset);

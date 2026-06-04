@@ -47,7 +47,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     | 'mainSerialNumber'
     | 'serialNumber'
     | 'assetName'
-    | 'status'
     | 'ownerName'
     | 'location'
     | 'acquiredDate'
@@ -55,7 +54,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     mainSerialNumber: data.mainSerialNumber,
     serialNumber: data.serialNumber,
     assetName: data.assetName,
-    status: data.status,
     ownerName: data.ownerName ?? '',
     location: data.location ?? '',
     acquiredDate: data.acquiredDate ?? '',

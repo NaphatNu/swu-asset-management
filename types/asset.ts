@@ -28,6 +28,8 @@ export interface Asset {
   serialNumber: string;
   assetName: string;
   location: string;
+  status: AssetStatus;
+  condition: AssetCondition;
   ownerName: string;
   acquiredDate: string;
   updatedByName: string;
